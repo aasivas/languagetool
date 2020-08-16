@@ -40,7 +40,7 @@ import org.languagetool.tools.StringTools;
 public class WordTokenizer implements Tokenizer {
 
   private static final List<String> PROTOCOLS = Collections.unmodifiableList(Arrays.asList("http", "https", "ftp"));
-  private static final Pattern URL_CHARS = Pattern.compile("[a-zA-Z0-9/%$-_.+!*'(),\\?#]+");
+  private static final Pattern URL_CHARS = Pattern.compile("[a-zA-Z0-9/%$-_.+!*'(),\\?#~]+");
   private static final Pattern DOMAIN_CHARS = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9-]+");
   private static final Pattern NO_PROTOCOL_URL = Pattern.compile("([a-zA-Z0-9][a-zA-Z0-9-]+\\.)?([a-zA-Z0-9][a-zA-Z0-9-]+)\\.([a-zA-Z0-9][a-zA-Z0-9-]+)/.*");
   private static final Pattern E_MAIL = Pattern.compile("(?<!:)\\b[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))\\b");
@@ -148,7 +148,7 @@ public class WordTokenizer implements Tokenizer {
     StringBuilder url = new StringBuilder();
     String urlQuote = null;
     for (int i = 0; i < l.size(); i++) {
-      if (urlStartsAt(i, l)) {
+      if (urlStartsAt(i, l) && !inUrl) {
         inUrl = true;
         if (i-1 >= 0) {
           urlQuote = l.get(i-1);
@@ -224,7 +224,7 @@ public class WordTokenizer implements Tokenizer {
         return true;
       }
     } else {
-      if (!URL_CHARS.matcher(token).matches() || token.equals(".")) {
+      if (!URL_CHARS.matcher(token).matches() || token.equals(".") || token.equals(urlQuote)) {
         return true;
       }
     }

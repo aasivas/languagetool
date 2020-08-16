@@ -30,6 +30,7 @@ import com.sun.star.text.XParagraphCursor;
 import com.sun.star.text.XText;
 import com.sun.star.text.XTextCursor;
 import com.sun.star.text.XTextDocument;
+import com.sun.star.text.XTextRange;
 import com.sun.star.uno.UnoRuntime;
 
 /**
@@ -41,9 +42,11 @@ import com.sun.star.uno.UnoRuntime;
 class DocumentCursorTools {
   
   private final XParagraphCursor xPCursor;
+  private final XTextCursor xTextCursor;
   private final List<Integer> headerNumbers = new ArrayList<Integer>();
   
   DocumentCursorTools(XComponent xComponent) {
+    xTextCursor = getCursor(xComponent);
     xPCursor = getParagraphCursor(xComponent);
   }
 
@@ -62,7 +65,14 @@ class DocumentCursorTools {
       if (xText == null) {
         return null;
       }
-      else return xText.createTextCursor();
+      else {
+        XTextRange xStart = xText.getStart();
+        try {
+          return xText.createTextCursorByRange(xStart);
+        } catch (Throwable t) {
+          return null;           // Return null without message - is needed for documents without main text (e.g. only a table)
+        }
+      }
     } catch (Throwable t) {
       MessageHandler.printException(t);     // all Exceptions thrown by UnoRuntime.queryInterface are caught
       return null;           // Return null as method failed
@@ -76,11 +86,10 @@ class DocumentCursorTools {
   @Nullable
   private XParagraphCursor getParagraphCursor(XComponent xComponent) {
     try {
-      XTextCursor xCursor = getCursor(xComponent);
-      if (xCursor == null) {
+      if (xTextCursor == null) {
         return null;
       }
-      return UnoRuntime.queryInterface(XParagraphCursor.class, xCursor);
+      return UnoRuntime.queryInterface(XParagraphCursor.class, xTextCursor);
     } catch (Throwable t) {
       MessageHandler.printException(t);     // all Exceptions thrown by UnoRuntime.queryInterface are caught
       return null;           // Return null as method failed
@@ -88,9 +97,17 @@ class DocumentCursorTools {
   }
   
   /** 
+   * Returns the TextCursor of the Document
+   * Returns null if it fails
+   */
+  @Nullable
+  public XTextCursor getTextCursor() {
+    return xTextCursor;
+  }
+  
+  /** 
    * Returns ParagraphCursor from TextCursor 
    * Returns null if it fails
-   * @return 
    */
   @Nullable
   public XParagraphCursor getParagraphCursor() {

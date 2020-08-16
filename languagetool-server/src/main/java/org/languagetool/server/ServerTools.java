@@ -42,7 +42,7 @@ final class ServerTools {
   static String getLoggingInfo(String remoteAddress, Exception e, int errorCode, HttpExchange httpExchange, Map<String, String> params, long runtimeMillis, RequestCounter reqCounter) {
     String message = "";
     if (e != null) {
-      message += "An error has occurred: '" +  e.getMessage() + "', sending HTTP code " + errorCode + ". ";
+      message += "An error has occurred: '" + ServerTools.cleanUserTextFromMessage(e.getMessage(), params) + "', sending HTTP code " + errorCode + ". ";
     }
     message += "Access from " + remoteAddress + ", ";
     message += "HTTP user agent: " + getHttpUserAgent(httpExchange) + ", ";
@@ -175,4 +175,32 @@ final class ServerTools {
     return mode;
   }
 
+  @NotNull
+  static JLanguageTool.Level getLevel(Map<String, String> params) {
+    JLanguageTool.Level level;
+    if (params.get("level") != null) {
+      String param = params.get("level");
+      if ("default".equals(param)) {
+        level = JLanguageTool.Level.DEFAULT;
+      } else if ("picky".equals(param)) {
+        level = JLanguageTool.Level.PICKY;
+      } else {
+        throw new IllegalArgumentException("If 'level' is set, it must be set to 'default' or 'picky'");
+      }
+    } else {
+      level = JLanguageTool.Level.DEFAULT;
+    }
+    return level;
+  }
+
+  /**
+   * Remove user-content from message in case parameters require increased privacy.
+   * @since 5.0
+   */
+  public static String cleanUserTextFromMessage(String s, Map<String, String> params) {
+    if (params.getOrDefault("inputLogging", "").equals("no")) {
+      return s.replaceAll("<sentcontent>.*?</sentcontent>", "<< content removed >>");
+    }
+    return s;
+  }
 }

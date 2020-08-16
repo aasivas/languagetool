@@ -27,14 +27,28 @@ import org.languagetool.rules.ngrams.FakeLanguageModel;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class UpperCaseNgramRuleTest {
 
+  private final static Map<String, Integer> map = new HashMap<>();
+  static {
+    map.put("really like", 100);
+    map.put("like spaghetti", 100);
+    map.put("This was", 100);
+    map.put("This was a", 10);
+    map.put("this was", 100);
+    map.put("this was a", 10);
+    map.put("indeed was", 100);
+    map.put("indeed was a", 10);
+  }
+  private final LanguageModel lm = new FakeLanguageModel(map);
   private final Language lang = Languages.getLanguageForShortCode("en");
-  private final UpperCaseRule rule = new UpperCaseRule(TestTools.getEnglishMessages(), lang);
+  private final UpperCaseNgramRule rule = new UpperCaseNgramRule(TestTools.getEnglishMessages(), lm, lang, null);
   private final JLanguageTool lt = new JLanguageTool(lang);
 
   @Test
@@ -42,6 +56,34 @@ public class UpperCaseNgramRuleTest {
     assertGood("The New York Times reviews their gallery all the time.");  // from spelling_global.txt
     assertGood("This Was a Good Idea");  // no dot = no real sentence
     assertGood("Professor Sprout acclimated the plant to a new environment.");  // "Professor ..." = antipattern
+    assertGood("Beauty products, Clean & Clear facial wash.");
+    assertGood("Please click Account > Withdraw > Update.");
+    assertGood("The goal is to Develop, Discuss and Learn.");
+    assertGood("(b) Summarize the strategy.");
+    assertGood("Figure/Ground:");
+    assertGood("What Happened?");
+    assertGood("1- Have you personally made any improvements?");
+    assertGood("Lesson #1 - Create a webinar.");
+    assertGood("Please refund Order #5698656.");
+    assertGood("Let's play games at Games.co.uk.");
+    assertGood("Ben (Been).");
+    assertGood("C stands for Curse.");
+    assertGood("The United States also used the short-lived slogan, \"Tastes So Good, You'll Roar\", in the early 1980s.");
+    assertGood("09/06 - Spoken to the business manager.");
+    assertGood("12.3 Game.");
+    assertGood("Let's talk to the Onboarding team.");
+    assertGood("My name is Gentle.");
+    assertGood("They called it Greet.");
+    assertGood("What is Foreshadowing?");
+    assertGood("His name is Carp.");
+    assertGood("Victor or Rabbit as everyone calls him.");
+    assertGood("Think I'm Tripping?");
+    assertGood("Music and Concepts.");
+    assertGood("It is called Ranked mode.");
+    // TODO:
+    //assertGood("Best Regards.");
+    //assertGood("USB Port.");
+    assertGood("ii) Expanded the notes.");
 
     assertMatch("I really Like spaghetti.");
     assertMatch("This Was a good idea.");
@@ -53,9 +95,8 @@ public class UpperCaseNgramRuleTest {
   public void testFirstLongWordToLeftIsUppercase() throws IOException, URISyntaxException {
     // FIXME commented out version doesn't work when running tests through maven
     //URL ngramUrl = JLanguageTool.getDataBroker().getFromResourceDirAsUrl("/yy/ngram-index");
-    LanguageModel lm = new FakeLanguageModel();
     //try (LuceneLanguageModel lm = new LuceneLanguageModel(new File(ngramUrl.toURI()))) {
-    UpperCaseNgramRule rule = new UpperCaseNgramRule(TestTools.getEnglishMessages(), lm, lang);
+    UpperCaseNgramRule rule = new UpperCaseNgramRule(TestTools.getEnglishMessages(), lm, lang, null);
 
     AnalyzedTokenReadings[] tokens1 = lt.getAnalyzedSentence("As with Lifeboat and Rope, the principal characters were ...").getTokens();
     // left:

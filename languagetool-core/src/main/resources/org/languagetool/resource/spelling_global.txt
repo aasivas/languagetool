@@ -26,6 +26,7 @@ WordPress
 Uber
 Messenger
 Snapchat
+Walt Disney World
 Walt Disney
 IBM
 Mastercard
@@ -57,8 +58,10 @@ Jaguar
 Honda
 Suzuki
 Kia
+Kia Motors
 Fiat
 Ferrari
+Ferraris
 Dacia
 Volvo
 Alfa Romeo
@@ -114,6 +117,7 @@ languagetoolplus.com
 languagetool.com
 SurveyMonkey
 Mailchimp
+Mailjet
 OpenAI
 Flickr
 Bitcoin
@@ -157,6 +161,9 @@ Wells Fargo
 Starbucks
 Deutsche Telekom
 Deutsche Bank
+Deutsche Bahn
+Deutsche Welle
+Deutsche Post
 ICBC
 Spectrum
 Walmart
@@ -265,7 +272,9 @@ Puma
 Airbnb
 Trivago
 TripAdvisor
+Trump
 Donald Trump
+Obama
 Barack Obama
 Angela Merkel
 Boris Johnson
@@ -278,14 +287,19 @@ OpenStreetMap
 Excel
 PowerPoint
 Photoshop
+Illustrator
+InDesign
+Lightroom
 AirPods
 Washington Post
 New York Times
+New York Post
 NY Times
 USA Today
 The Guardian
 Wall Street Journal
 The Wall Street Journal
+FT
 Financial Times
 The Financial Times
 Nikkei
@@ -336,6 +350,7 @@ WeTransfer
 Indeed
 IMDB
 Quizlet
+Quizlet Live
 LADbible
 San Francisco Chronicle
 Uber Eats
@@ -371,6 +386,8 @@ StatCounter
 Zendesk
 JCDecaux
 JC Decaux
+JC Penney
+JCPenney
 BPCE
 PSA
 Société Générale
@@ -382,6 +399,7 @@ Bank of Nova Scotia
 Suncor Energy
 Anheuser-Busch
 Anheuser-Busch InBev
+AB InBev
 KBC Bank
 Epic Games
 Rockstar Games
@@ -491,7 +509,6 @@ PS2
 PS3
 PS4
 PS5
-AMD
 HDMI
 Sanofi
 Joomla
@@ -618,6 +635,7 @@ Surface Pro
 Depeche Mode
 Zac Efron
 CSS
+SCSS
 HTML
 AdSense
 AdWords
@@ -678,6 +696,7 @@ Fortune 500
 Apache
 Nginx
 nginx
+lighttpd
 SSH
 SSL
 Nintendo Switch
@@ -709,6 +728,8 @@ Azure
 Fujitsu
 Toshiba
 Lenovo
+ThinkPad
+IdeaPad
 Hitachi
 Seagate
 LaCie
@@ -798,6 +819,7 @@ OpenOffice
 LibreOffice
 4K
 LTE
+UMTS
 2G
 3G
 4G
@@ -859,3 +881,481 @@ Grammarly
 HAProxy
 RabbitMQ
 Skywalker
+Snoop Dogg
+Nate Dogg
+NASCAR
+Dyson
+Yamaha
+DigitalOcean
+exFAT
+WireGuard
+Netlify
+Heroku
+Foot Locker
+Cambridge Analytica
+William Barr
+Whiskas
+Lavazza
+Skittles
+Neutrogena
+Michael Jackson
+Thunderbird
+The Boston Globe
+Boston Globe
+Edward Snowden
+NSA
+ABBA
+Eurowings
+Woolworth
+TensorFlow
+Hewlett Packard Enterprise
+Hewlett Packard
+Justin Bieber
+Drake
+Angelina Jolie
+SpaceX
+Amazon Echo
+Amazon Prime
+Amazon Prime Video
+Echo Dot
+Echo Show
+George Floyd
+Zynga
+Googleplex
+SanDisk
+Ray-Ban
+Ray Ban
+Spice Girls
+Backstreet Boys
+Tony Hawk
+Hotmail
+Coinbase
+SolarCity
+DocuSign
+Kit Kat
+San Pellegrino
+Chuck Norris
+BLM
+Black Lives Matter
+PSN
+FireWire
+Pro Display XDR
+Maddie McCann
+Giphy
+Sherlock Holmes
+SMS
+IPv4
+IPv6
+NBA
+NFL
+NHL
+Reebok
+Bing
+Instacart
+VKontakte
+LVMH
+Anonymous
+Bloomberg News
+Darth Vader
+Lucasfilm
+Cathay Pacific
+Cathay Pacific Airways
+Jennifer Aniston
+Amex
+Clash Royale
+Electro Valley
+Wattpad
+NYSE
+New York Stock Exchange
+Nicki Minaj
+cPanel
+Primark
+NTT Communications
+IoT
+Dunlop
+Flipgrid
+Kindle
+Nespresso
+Universal Studios
+Universal Music Group
+Universal Music
+Real Madrid
+Linkin Park
+Britney Spears
+Dolce Gusto
+DeLonghi
+WebGL
+OpenGL
+MVC
+Dua Lipa
+TLD
+gTLD
+ccTLD
+Paris Hilton
+Foodora
+Grubhub
+Groupon
+LeBron James
+Delivery Hero
+Apple Wallet
+Calvin Klein
+IFTTT
+Dolby Digital
+Dolby Atmos
+Dolby Cinema
+Dolby TrueHD
+Dolby Vision
+BC
+Ben Affleck
+JPEG
+JPG
+PSD
+RTF
+ZIP
+HTML
+TXT
+PNG
+MP3
+MP4
+MPEG
+PPT
+PPTX
+CSV
+XML
+SVG
+TIFF
+TIF
+JS
+PHP
+RSS
+XLS
+XLSX
+DOC
+DOCX
+PDF
+GIF
+AVI
+EXE
+OpenAI
+Adobe Premiere
+Epoch Times
+Van Helsing
+Bee Gees
+Axl Rose
+AirPlay
+2FA
+Kia Optima
+Kia XCeed
+Usain Bolt
+FA Cup
+Oxford Dictionary
+Beyond Meat
+Ultrabook
+XSL
+XSLT
+Cirque du Soleil
+FileZilla
+Decathlon
+Sketch
+Knorr-Bremse
+Adblock Plus
+TeamViewer
+Acrobat Reader
+Adobe Acrobat
+CorelDRAW
+QuickTime
+DoubleClick
+Commodore 64
+Xbox Live
+Xbox One
+Ableton Live
+ConnectedDrive
+Harper's Bazaar
+Harper's BAZAAR
+Ocasio-Cortez
+Adobe Fireworks
+P&G
+Flixbus
+FlixBus
+FlixTrain
+FlixCar
+Yutong
+Phoenix Labs
+Charlie Hebdo
+Hugo Boss
+Johnny Cash
+Docker
+TestFlight
+TCP
+UDP
+PaaS
+SaaS
+McAfee
+Kaspersky
+Def Leppard
+Rakuten
+PrestaShop
+Duolingo
+Figma
+Stripe
+Node.js
+Ronaldo
+UnionPay
+KPMG
+AdMob
+Citigroup
+Air New Zealand
+Fast & Furious
+Fast and Furious
+Kim Jong-un
+Xi Jinping
+Kenwood
+Gal Gadot
+Don Omar
+Vin Diesel
+Motorola Razr
+Cloudflare
+Akamai
+Twilio
+Big Sur
+Final Cut Pro
+Patagonia
+NFC
+CarKey
+Western Union
+Wikimedia
+Laravel
+Al Pacino
+Bruce Willis
+Tom Hanks
+Matt Damon
+Brad Pitt
+Morgan Freeman
+Robert De Niro
+George Clooney
+Clint Eastwood
+Russell Crowe
+Netscape
+Microsoft Dynamics
+JDK
+Sotheby's
+Tinkercad
+Windows XP
+Windows Vista
+Adyen
+Elasticsearch
+JCB
+Max Planck
+Pixar
+Shazam
+Scania
+Scania AB
+Budweiser Light
+Bud Light
+James Bond
+IntelliJ
+IntelliJ IDEA
+NetBeans
+WebStorm
+VMWare
+Bosch
+QVC
+Tomorrowland
+CloudFront
+ECMAScript
+LGBT
+LGBTQI
+LGBTQIA+
+Tesco
+Weetabix
+Rocket Internet
+Tommy Hilfiger
+Minecraft Dungeons
+Vanilla Ice
+J. K. Rowling
+J.K. Rowling
+JK Rowling
+Getty Images
+Frankfurter Allgemeine
+Frankfurter Allgemeine Zeitung
+WebKit
+Tom Ford
+Ralph Lauren
+Fred Perry
+Gilead
+Travis CI
+CricleCI
+Jenkins
+Overleaf
+LaTeX
+Nesquik
+Maggi
+⚠️
+Taboola
+Yuval
+Harari
+Philip Morris
+WinRAR
+Postmates
+Reckitt Benckiser
+Tata Motors
+Range Rover
+Emmanuel Macron
+After Effects
+Debian
+CrossFit
+Forbes
+Markdown
+Webpack
+NPM
+PowerShell
+Rackspace
+VueJS
+Windows 7 Ultimate
+Windows 10 Pro
+Secret Escapes
+Billabong
+RingCentral
+Dell XPS
+General Electric
+Walgreens
+Walgreens Boots
+Walgreens Boots Alliance
+EURO STOXX
+Euro Stoxx
+Polestar
+x86
+AMD Athlon
+PyTorch
+MediaTek
+Pitbull
+Sourceforge
+LastPass
+Norton
+Best Buy
+Steve Ballmer
+Satya Nadella
+Nikon
+Canon
+Synology
+Wunderlist
+Palmolive
+Armani
+Isuzu
+Isuzu Motors
+Jack Ma
+BMW iX
+BMW iNext
+TextMate
+Scrivener
+ABB
+Hapag-Lloyd
+Banksy
+Jio Platforms
+CBS
+Daihatsu
+Bugatti
+Buick
+Cadillac
+GMC
+Datsun
+Acura
+Abarth
+Lancia
+Dodge
+Vauxhall
+Petrobras
+Randstad
+Royal Dutch Shell
+Rabobank
+Interbrand
+Sprite
+Fanta
+Seven Up
+Dr Pepper
+Usenet
+Xcode
+macOS
+Visual Studio
+VS Code
+Shutterstock
+NordVPN
+SEMrush
+Benetton
+Fortnite
+iSight
+Mario Kart
+Super Nintendo
+Donkey Kong
+Super Mario Kart
+Game Boy
+The Legend of Zelda
+Legend of Zelda
+Udemy
+Babbel
+Rosetta Stone
+EQC
+Braintree
+MongoDB
+Zscaler
+Marriott
+GQ
+Vanity Fair
+Al Pacino
+Northvolt
+CCleaner
+Motörhead
+QNAP
+Netgear
+Waymo
+Zalando
+Guggenheim
+Cao Cao
+TomTom
+Halliburton
+Ant Financial
+AirDrop
+GPT-2
+GPT-3
+Bertrandt
+Roundcube
+GeForce
+Elvis Presley
+Mondelez
+Cadbury
+General Mills
+iA Writer
+Clippy
+Bang & Olufsen
+Sennheiser
+Germanwings
+Wizz Air
+Daft Punk
+Qualcomm
+YouGov
+iMac
+ABAP
+Rammstein
+Voldemort
+World of Warcraft
+Windows
+League of Legends
+Erasmus
+Harman Kardon
+Sonos
+JBL
+Garmin
+Counter Strike
+Flipkart
+Foxconn
+Palantir
+ASML
+✏️
+WWDC
+Karl Lagerfeld
+Bharti Airtel
+Rivian
+Hooters
+Blaupunkt
+CloudFormation
+JSON

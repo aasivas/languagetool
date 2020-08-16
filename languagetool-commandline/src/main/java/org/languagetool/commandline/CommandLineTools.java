@@ -18,12 +18,10 @@
  */
 package org.languagetool.commandline;
 
-import org.languagetool.AnalyzedSentence;
-import org.languagetool.DetectedLanguage;
-import org.languagetool.JLanguageTool;
-import org.languagetool.Language;
+import org.languagetool.*;
 import org.languagetool.bitext.BitextReader;
 import org.languagetool.bitext.StringPair;
+import org.languagetool.markup.AnnotatedTextBuilder;
 import org.languagetool.rules.Rule;
 import org.languagetool.rules.RuleMatch;
 import org.languagetool.rules.TextLevelRule;
@@ -40,10 +38,12 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.emptyList;
+import static org.languagetool.JLanguageTool.Level.*;
 
 /**
  * @since 2.3
@@ -71,18 +71,18 @@ public final class CommandLineTools {
   }
 
   public static int checkText(String contents, JLanguageTool lt) throws IOException {
-    return checkText(contents, lt, false, false, -1, 0, 0, StringTools.ApiPrintMode.NORMAL_API, false, Collections.emptyList());
+    return checkText(contents, lt, false, false, -1, 0, 0, StringTools.ApiPrintMode.NORMAL_API, false, DEFAULT, emptyList());
   }
 
   public static int checkText(String contents, JLanguageTool lt,
                               boolean isXmlFormat, boolean isJsonFormat, int lineOffset) throws IOException {
-    return checkText(contents, lt, isXmlFormat, isJsonFormat, -1, lineOffset, 0, StringTools.ApiPrintMode.NORMAL_API, false, Collections.emptyList());
+    return checkText(contents, lt, isXmlFormat, isJsonFormat, -1, lineOffset, 0, StringTools.ApiPrintMode.NORMAL_API, false, DEFAULT, emptyList());
   }
   
   public static int checkText(String contents, JLanguageTool lt,
-          boolean isXmlFormat, boolean isJsonFormat, int lineOffset, boolean listUnknownWords) throws IOException {
-    return checkText(contents, lt, isXmlFormat, isJsonFormat, -1, lineOffset, 0, StringTools.ApiPrintMode.NORMAL_API, listUnknownWords, Collections.emptyList());
-}
+          boolean isXmlFormat, boolean isJsonFormat, int lineOffset, JLanguageTool.Level level, boolean listUnknownWords) throws IOException {
+    return checkText(contents, lt, isXmlFormat, isJsonFormat, -1, lineOffset, 0, StringTools.ApiPrintMode.NORMAL_API, listUnknownWords, level, emptyList());
+  }
 
   /**
    * Check the given text and print results to System.out.
@@ -100,12 +100,13 @@ public final class CommandLineTools {
   public static int checkText(String contents, JLanguageTool lt,
                               boolean isXmlFormat, boolean isJsonFormat, int contextSize, int lineOffset,
                               int prevMatches, StringTools.ApiPrintMode apiMode,
-                              boolean listUnknownWords, List<String> unknownWords) throws IOException {
+                              boolean listUnknownWords, JLanguageTool.Level level, List<String> unknownWords) throws IOException {
     if (contextSize == -1) {
       contextSize = DEFAULT_CONTEXT_SIZE;
     }
     long startTime = System.currentTimeMillis();
-    List<RuleMatch> ruleMatches = lt.check(contents);
+    List<RuleMatch> ruleMatches = lt.check(new AnnotatedTextBuilder().addText(contents).build(), true, JLanguageTool.ParagraphHandling.NORMAL,
+      null, JLanguageTool.Mode.ALL, level);
     // adjust line numbers
     for (RuleMatch r : ruleMatches) {
       r.setLine(r.getLine() + lineOffset);
@@ -127,7 +128,7 @@ public final class CommandLineTools {
       PrintStream out = new PrintStream(System.out, true, "UTF-8");
       out.print(json);
     } else {
-      printMatches(ruleMatches, prevMatches, contents, contextSize);
+      printMatches(ruleMatches, prevMatches, contents, contextSize, lt.getLanguage());
     }
 
     //display stats if it's not in a buffered mode
@@ -166,7 +167,7 @@ public final class CommandLineTools {
    * @since 1.0.1
    */
   private static void printMatches(List<RuleMatch> ruleMatches,
-                                   int prevMatches, String contents, int contextSize) {
+                                   int prevMatches, String contents, int contextSize, Language lang) {
     int i = 1;
     ContextTools contextTools = new ContextTools();
     contextTools.setContextSize(contextSize);
@@ -180,9 +181,12 @@ public final class CommandLineTools {
           output += "[" + pRule.getSubId() + "]";
         }
       }
+      int priorityForId = lang.getRulePriority(match.getRule());
+      if (priorityForId != 0) {
+        output += " prio=" + priorityForId;
+      }
       System.out.println(output);
-      String msg = match.getMessage();
-      msg = msg.replaceAll("</?suggestion>", "'");
+      String msg = lang.toAdvancedTypography(match.getMessage().replaceAll("<suggestion>", lang.getOpeningQuote()).replaceAll("</suggestion>", lang.getClosingQuote()));
       System.out.println("Message: " + msg);
       List<String> replacements = match.getSuggestedReplacements();
       if (!replacements.isEmpty()) {
@@ -193,6 +197,12 @@ public final class CommandLineTools {
         System.out.println("More info: " + match.getUrl());
       } else if (rule.getUrl() != null) {
         System.out.println("More info: " + rule.getUrl());
+      }
+      if (rule instanceof AbstractPatternRule) {
+        List<Tag> tags = rule.getTags();
+        if (!tags.isEmpty()) {
+          System.out.println("Tags: " + tags);
+        }
       }
       if (i < ruleMatches.size()) {
         System.out.println();
@@ -249,7 +259,7 @@ public final class CommandLineTools {
                   reader.getCurrentLine(), contextSize);
           out.print(xml);
         } else {
-          printMatches(fixedMatches, matchCount, reader.getCurrentLine(), contextSize);
+          printMatches(fixedMatches, matchCount, reader.getCurrentLine(), contextSize, trgLt.getLanguage());
           matchCount += fixedMatches.size();
         }
       }

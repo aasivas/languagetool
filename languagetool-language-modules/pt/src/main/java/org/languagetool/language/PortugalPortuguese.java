@@ -46,11 +46,13 @@ public class PortugalPortuguese extends Portuguese {
     rules.add(new PostReformPortugueseDashRule(messages));
     rules.add(new PortugalPortugueseReplaceRule(messages));
     rules.add(new PortugueseAgreementReplaceRule(messages));
+    rules.add(new PortugueseBarbarismsRule(messages, "/pt/barbarisms-pt-PT.txt"));
+    rules.add(new PortugueseArchaismsRule(messages, "/pt/archaisms-pt-PT.txt"));
     return rules;
   }
 
   @Override
-  public int getPriorityForId(String id) {
+  protected int getPriorityForId(String id) {
     switch (id) {
       case "PT_COMPOUNDS_POST_REFORM":         return  1;
       case "PORTUGUESE_OLD_SPELLING_INTERNAL": return -9;

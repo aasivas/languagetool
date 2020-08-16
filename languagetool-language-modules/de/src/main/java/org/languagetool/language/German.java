@@ -157,7 +157,7 @@ public class German extends Language implements AutoCloseable {
             new EmptyLineRule(messages, this),
             new GermanStyleRepeatedWordRule(messages, this, userConfig),
             new CompoundCoherencyRule(messages),
-            new LongSentenceRule(messages, userConfig),
+            new LongSentenceRule(messages, userConfig, 35, true, true),
             new LongParagraphRule(messages, this, userConfig),
             new GermanFillerWordsRule(messages, this, userConfig),
             new GermanParagraphRepeatBeginningRule(messages, this),
@@ -252,10 +252,11 @@ public class German extends Language implements AutoCloseable {
   }
 
   @Override
-  public int getPriorityForId(String id) {
+  protected int getPriorityForId(String id) {
     switch (id) {
       // Rule ids:
       case "OLD_SPELLING_INTERNAL": return 10;
+      case "ROCK_N_ROLL": return 1;  // better error than DE_CASE
       case "DE_PROHIBITED_COMPOUNDS": return 1;  // a more detailed error message than from spell checker
       case "ANS_OHNE_APOSTROPH": return 1;
       case "DIESEN_JAHRES": return 1;
@@ -263,10 +264,12 @@ public class German extends Language implements AutoCloseable {
       case "UST_ID": return 1;
       case "DASS_MIT_VERB": return 1; // prefer over SUBJUNKTION_KOMMA ("Dass wird Konsequenzen haben.")
       case "AB_TEST": return 1; // prefer over spell checker and agreement
+      case "BZGL_ABK": return 1; // prefer over spell checker
+      case "DURCH_WACHSEN": return 1; // prefer over SUBSTANTIVIERUNG_NACH_DURCHs
+      case "RUNDUM_SORGLOS_PAKET": return 1; // higher prio than DE_CASE
       // default is 0
-      case "DE_AGREEMENT": return -1;  // prefer RECHT_MACHEN, MONTAGS, KONJUNKTION_DASS_DAS, DESWEITEREN and other
+      case "DE_AGREEMENT": return -1;  // prefer RECHT_MACHEN, MONTAGS, KONJUNKTION_DASS_DAS, DESWEITEREN, DIES_BEZUEGLICH and other
       case "COMMA_IN_FRONT_RELATIVE_CLAUSE": return -1; // prefer other rules (KONJUNKTION_DASS_DAS)
-      case "CONFUSION_RULE": return -1;  // probably less specific than the rules from grammar.xml
       case "MODALVERB_FLEKT_VERB": return -1;
       case "AKZENT_STATT_APOSTROPH": return -1;  // lower prio than PLURAL_APOSTROPH
       case "GERMAN_WORD_REPEAT_RULE": return -1; // prefer other more specific rules
@@ -277,12 +280,15 @@ public class German extends Language implements AutoCloseable {
       case "KOMMA_ZWISCHEN_HAUPT_UND_NEBENSATZ": return -10;
       case "KOMMA_VOR_RELATIVSATZ": return -10;
       case "COMMA_BEHIND_RELATIVE_CLAUSE": return -10;
+      case "TOO_LONG_PARAGRAPH": return -15;
       // Category ids - make sure style issues don't hide overlapping "real" errors:
       case "COLLOQUIALISMS": return -15;
-      case "STYLE": return -15;
       case "REDUNDANCY": return -15;
       case "GENDER_NEUTRALITY": return -15;
       case "TYPOGRAPHY": return -15;
+    }
+    if (id.startsWith("CONFUSION_RULE_")) {
+      return -1;
     }
     return super.getPriorityForId(id);
   }

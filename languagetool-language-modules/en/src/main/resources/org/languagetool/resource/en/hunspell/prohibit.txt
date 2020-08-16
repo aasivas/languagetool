@@ -41,13 +41,11 @@ ne
 personnels
 # should be built-in
 builtin
-# breakpoint is not in the dict, so should be breakpoints
-breakpoints
 amazon
 froward
 nerver
 heigh
-# brank is normally used in plural (branks), also it's scottish and archaic, easily confused with "bank", "blank", "rank", "crank" etc.
+# brank is normally used in plural (branks), also it's Scottish and archaic, easily confused with "bank", "blank", "rank", "crank" etc.
 brank
 sin-off
 sin-offs
@@ -57,3 +55,33 @@ someones
 somethings
 anythings
 na
+pre-requisite
+pre-requisites
+on-line
+Nescafe
+# Has to be T-Mobile / T-Systems
+t-mobile
+T-mobile
+t-systems
+T-systems
+dc
+fo
+multi-task
+multi-tasks
+multi-tasked
+multi-tasking
+# commentor: AmE only, issue 3195
+commentor
+commentors
+dim-wit
+dim-wits
+nit-wit
+nit-wits
+# It is "K-pop" https://www.merriam-webster.com/dictionary/K-pop
+k-pop
+mean-time
+back-log
+christian
+editor-in-chiefs
+supp
+soom

@@ -51,7 +51,8 @@ class LightRuleMatchParser {
    * Parses LT JSON that has been appended into a large file (one JSON result per line).
    */
   @NotNull
-  private List<LightRuleMatch> parseAggregatedJson(File inputFile) throws IOException {
+  private List<LightRuleMatch> parseAggregatedJson(File inputFile) {
+    System.out.println("Parsing " + inputFile + "...");
     ObjectMapper mapper = new ObjectMapper();
     List<LightRuleMatch> ruleMatches = new ArrayList<>();
     int lineCount = 1;
@@ -76,6 +77,7 @@ class LightRuleMatchParser {
     int offset = match.get("offset").asInt();
     JsonNode rule = match.get("rule");
     String ruleId = rule.get("id").asText();
+    String fullRuleId = rule.get("subId") != null ? ruleId + "[" + rule.get("subId").asText() + "]" : ruleId;
     String message = match.get("message").asText();
     int contextOffset = match.get("context").get("offset").asInt();
     int contextLength = match.get("context").get("length").asInt();
@@ -108,7 +110,7 @@ class LightRuleMatchParser {
     if (rule.get("tempOff") != null && rule.get("tempOff").asBoolean()) {
       status = LightRuleMatch.Status.temp_off;
     }
-    return new LightRuleMatch(0, offset, ruleId, message, context, coveredText, suggestions, ruleSource, title, status);
+    return new LightRuleMatch(0, offset, fullRuleId, message, context, coveredText, suggestions, ruleSource, title, status);
   }
 
   List<LightRuleMatch> parseOutput(Reader reader) {

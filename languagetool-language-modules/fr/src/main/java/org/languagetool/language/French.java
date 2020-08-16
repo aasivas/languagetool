@@ -32,14 +32,21 @@ import org.languagetool.tagging.disambiguation.fr.FrenchHybridDisambiguator;
 import org.languagetool.tagging.fr.FrenchTagger;
 import org.languagetool.tokenizers.SRXSentenceTokenizer;
 import org.languagetool.tokenizers.SentenceTokenizer;
+import org.languagetool.tokenizers.Tokenizer;
+import org.languagetool.tokenizers.fr.FrenchWordTokenizer;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class French extends Language implements AutoCloseable {
 
   private LanguageModel languageModel;
+  
+  private static final Pattern APOSTROPHE = Pattern.compile("(\\p{L})'([\\p{L}\u202f\u00a0 !\\?,\\.;:])",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
   @Override
   public SentenceTokenizer createDefaultSentenceTokenizer() {
@@ -73,6 +80,11 @@ public class French extends Language implements AutoCloseable {
   public Synthesizer createDefaultSynthesizer() {
     return new FrenchSynthesizer(this);
   }
+  
+  @Override
+  public Tokenizer createDefaultWordTokenizer() {
+    return new FrenchWordTokenizer();
+  }
 
   @Override
   public Disambiguator createDefaultDisambiguator() {
@@ -96,17 +108,18 @@ public class French extends Language implements AutoCloseable {
                     Arrays.asList("]", ")", "}"
                          /*"»", French dialog can contain multiple sentences. */
                          /*"’" used in "d’arm" and many other words */)),
-            // very fast, but no suggestions:
-            //new HunspellNoSuggestionRule(messages, this, Example.wrong("Le <marker>chein</marker> noir"), Example.fixed("Le <marker>chien</marker> noir")),
-            // slower than HunspellNoSuggestionRule but with suggestions:
-            new FrenchCompoundAwareHunspellRule(messages, this, userConfig, altLanguages),
+            new MorfologikFrenchSpellerRule(messages, this, userConfig, altLanguages),
             new UppercaseSentenceStartRule(messages, this),
             new MultipleWhitespaceRule(messages, this),
             new SentenceWhitespaceRule(messages),
+            new LongSentenceRule(messages, userConfig, 35, true, true),
+            new LongParagraphRule(messages, this, userConfig),
             // specific to French:
             new CompoundRule(messages),
             new QuestionWhitespaceStrictRule(messages, this),
-            new QuestionWhitespaceRule(messages, this)
+            new QuestionWhitespaceRule(messages, this),
+            new SimpleReplaceRule(messages),
+            new AnglicismReplaceRule(messages)
     );
   }
 
@@ -134,6 +147,68 @@ public class French extends Language implements AutoCloseable {
     return languageModel;
   }
 
+  /** @since 5.1 */
+  @Override
+  public String getOpeningQuote() {
+    return "« ";
+  }
+
+  /** @since 5.1 */
+  @Override
+  public String getClosingQuote() {
+    return " »";
+  }
+  
+  @Override
+  public String toAdvancedTypography (String input) {
+    String output = input;
+    
+    // Apostrophe and closing single quote
+    Matcher matcher = APOSTROPHE.matcher(output);
+    output = matcher.replaceAll("$1’$2");
+    
+    // single quotes
+    if (output.startsWith("'")) { 
+      output = output.replaceFirst("'", "‘");
+    }
+    output = output.replaceAll(" '", " ‘");
+    if (output.endsWith("'")) { 
+      output = output.substring(0, output.length() - 1 ) + "’";
+    }
+
+    // guillemets
+    if (output.startsWith("\"")) { 
+      output = output.replaceFirst("\"", "«");
+    }
+    if (output.endsWith("\"")) { 
+      output = output.substring(0, output.length() - 1 ) + "»";
+    }
+    output = output.replaceAll(" \"", " «");
+    output = output.replaceAll("\"([\\u202f\\u00a0 !\\?,\\.;:])", "»$1");
+       
+    
+    // non-breaking (thin) space 
+    // according to https://fr.wikipedia.org/wiki/Espace_ins%C3%A9cable#En_France
+    output = output.replaceAll(";", "\u202f;");
+    output = output.replaceAll("!", "\u202f!");
+    output = output.replaceAll("\\?", "\u202f?");
+    
+    output = output.replaceAll(":", "\u00a0:");
+    output = output.replaceAll("»", "\u00a0»");
+    output = output.replaceAll("«", "«\u00a0");
+    
+    //remove duplicate spaces
+    output = output.replaceAll("\u00a0\u00a0", "\u00a0");
+    output = output.replaceAll("\u202f\u202f", "\u202f");
+    output = output.replaceAll("  ", " ");
+    output = output.replaceAll("\u00a0 ", "\u00a0");
+    output = output.replaceAll(" \u00a0", "\u00a0");
+    output = output.replaceAll(" \u202f", "\u202f");
+    output = output.replaceAll("\u202f ", "\u202f");
+    
+    return output;
+  }
+
   /**
    * Closes the language model, if any. 
    * @since 3.1
@@ -151,18 +226,26 @@ public class French extends Language implements AutoCloseable {
   }
 
   @Override
-  public int getPriorityForId(String id) {
+  protected int getPriorityForId(String id) {
     switch (id) {
+      case "DU_DU": return 10; // greater than DU_LE
+      case "ACCORD_CHAQUE": return 10; // greater than ACCORD_NOMBRE
+      case "CEST_A_DIRE": return 10; // greater than A_A_ACCENT
       case "ESPACE_UNITES": return 1; // needs to have higher priority than spell checker
       case "BYTES": return 1; // needs to be higher than spell checker for 10MB style matches
       case "Y_A": return 1; // needs to be higher than spell checker for style suggestion
       case "A_A_ACCENT": return 1; // triggers false alarms for IL_FAUT_INF if there is no a/à correction
       case "FRENCH_WHITESPACE_STRICT": return 1;  // default off, but if on, it should overwrite FRENCH_WHITESPACE 
       case "FRENCH_WHITESPACE": return 0;
-      case "ELISION": return 0; // should be lower in priority than spell checker
+      case "JE_SUI": return 1;  // needs higher priority than spell checker
+      case "TOO_LONG_PARAGRAPH": return -15;
+      case "FR_SPELLING_RULE": return -100;
+      case "ELISION": return -200; // should be lower in priority than spell checker
+      case "NONVERB_PRON": return -200; // show the suggestion by the spell checker if exists
+      case "UPPERCASE_SENTENCE_START": return -300;
     }
     if (id.startsWith("grammalecte_")) {
-      return -1;
+      return -150;
     }
     return super.getPriorityForId(id);
   }

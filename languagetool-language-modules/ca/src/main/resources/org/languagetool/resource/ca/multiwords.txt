@@ -1,4 +1,49 @@
 #Catalan multiwords file used for chunking
+GNU General Public License	NPFSO00
+Mozilla Public License	NPFSO00
+GNU Lesser General Public License	NPFSO00
+de ben jove	LOC_ADV
+Benjamin Constant	NPMSSP0
+Jean Renoir	NPMSSP0
+Charles Dickens	NPMSSP0
+Luo Guanzhong	NPMSSP0
+Jane Austen	NPFSSP0
+Frank Capra	NPMSSP0
+Buster Keaton	NPMSSP0
+mag d'Oz	NPMSSP0
+Stabat Mater	NCMN000
+Giovanni Battista	NPMSSP0
+Johann Sebastian	NPMSSP0
+Pablo Iglesias	NPMSSP0
+Chico Mendes	NPMSSP0
+New Deal	NCMS000
+Os Lusíadas	NPMPO00
+impressió òfset	NCFS000
+sistema cremallera	NCMS000
+caixa niu	NCFS000
+caixes niu	NCFP000
+Steven Spielberg	NPMSSP0
+Immanuel Kant	NPMSSP0
+Golden Gate	NPMSG00
+Lucky Luke	NPMSSP0
+Brad Pitt	NPMSSP0
+Beverly Hills	NPCSG00
+Library of Congress Online Catalog	NPFSO00 
+Library of Congress	NPFSO00
+Sport Club	NPMSO00
+acqua alta	NCFS000
+Far West	NPMSG00
+CC BY	LOC_ADJ
+CC BY-SA	LOC_ADJ
+CC BY-NC	LOC_ADJ
+CC BY-NC-SA	LOC_ADJ
+CC BY-ND	LOC_ADJ
+CC BY-NC-ND	LOC_ADJ
+CC0	LOC_ADJ
+nolens volens	LOC_ADV
+Torrejón de Ardoz	NPCS000
+van 't Hoff	NPCNSP0
+van't Hoff	NPCNSP0
 Sierra Nevada	NPFSG00
 Barcelona Supercomputing Center	NPMSO00
 Proactiva Open Arms	NPCNO00
@@ -197,17 +242,17 @@ Guangxi Zhuang	NPCNG00
 Hai Phong	NPCNG00
 Hindu Kush	NPCNG00
 Ho Chi Minh	NPCNG00
-Homo sapiens	NCMN000
-Homo habilis	NCMN000
-Homo erectus	NCMN000
-Homo antecessor	NCMN000
-Homo rudolfensis	NCMN000
-Homo ergaster	NCMN000
-Homo heidelbergensis	NCMN000
-Homo neanderthalensis	NCMN000
-Homo rhodesiensis	NCMN000
-Homo sapiens idaltu	NCMN000
-Homo sapiens sapiens	NCMN000
+homo sapiens	NCMN000
+homo habilis	NCMN000
+homo erectus	NCMN000
+homo antecessor	NCMN000
+homo rudolfensis	NCMN000
+homo ergaster	NCMN000
+homo heidelbergensis	NCMN000
+homo neanderthalensis	NCMN000
+homo rhodesiensis	NCMN000
+homo sapiens idaltu	NCMN000
+homo sapiens sapiens	NCMN000
 Hong Kong	NPCNG00
 Hradec Králové	NPCNG00
 Huang He	NPCNG00
@@ -218,7 +263,14 @@ Internet Archive	NPMSO00
 Jefferson City	NPCNG00
 Jane Eyre	NPFSSP0
 José María	NPMSSP0
+Juan María	NPMSSP0
+Antonio María	NPMSSP0
+Pedro María	NPMSSP0
 José Luis	NPMSSP0
+María Luisa	NPFSSP0
+Pedro Luis	NPMSSP0
+Antonio Luis	NPMSSP0
+Juan Luis	NPMSSP0
 Joventut de Badalona	NPMSO00
 Juan José	NPMSSP0
 Juan Carlos	NPMSSP0
@@ -785,6 +837,8 @@ concerti grossi	NCMP000
 contradictio in terminis	NCFS000
 conveni marc	NCMS000
 convenis marc	NCMP000
+document marc	NCMS000
+documents marc	NCMP000
 com ara	LOC_CONJ
 commedia dell'arte	NCFS000
 concurs oposició	NCMS000
@@ -948,6 +1002,9 @@ dolce vita	NCFS000
 dolce stil nuovo	NCMS000
 drag queen	NCFS000
 drag queens	NCFP000
+drag king	NCMS000
+drag kings	NCMP000
+Mona Lisa	NPFSSP0
 en absolut	LOC_ADV
 en absència d'	LOC_PREP
 en absència de	LOC_PREP
@@ -1062,6 +1119,8 @@ ex abrupto	LOC_ADV
 ex aequo	LOC_ADV
 ex ante	LOC_ADV
 ex post	LOC_ADV
+ex-ante	LOC_ADV
+ex-post	LOC_ADV
 ex cathedra	LOC_ADV
 ex nihilo	LOC_ADV
 ex novo	LOC_ADV
@@ -1282,7 +1341,7 @@ quant i més	LOC_PREP
 quant més	LOC_PREP
 quid pro quo	NCMS000
 khi quadrat	LOC_ADJ
-rara avis	NCFS000
+rara avis	NCFN000
 rata mesquera	NCFS000
 rates mesqueres	NCFP000
 referent a	LOC_PREP
@@ -1293,7 +1352,7 @@ respecte de	LOC_PREP
 restaurant cerveseria	NCMS000
 road movie	NCFS000
 road movies	NCFP000
-R+D	NCMS000
+R+D	NCFS000
 rock and roll	NCMS000
 rock & roll	NCMS000
 rigor mortis	NCMS000

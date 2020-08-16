@@ -51,6 +51,7 @@ public class WordListValidatorTest {
           "Tromsø/S",
           "Solidarność",
           "Salihamidžić/S",
+          "Darʿā",  // de
           "veni, vidi, vici", // en
           "Food+Tech Connect", // en
           "comme ci, comme ça", // en
@@ -106,6 +107,11 @@ public class WordListValidatorTest {
           "S&P",
           "ČSSR",
           "V&D",
+          "İlkay",
+          "Gündoğan",
+          "Ñuñoa",
+          "Ibišević",
+          "Fríður",
           // Greek letters / Mathematics and physics variables
           "Α", "Β", "Γ", "Δ", "Ε", "Ζ", "Η", "Θ", "Ι", "Κ", "Λ", "Μ", "Ν", "Ξ", "Ο", "Π", "Ρ", "Σ", "Τ", "Υ", "Φ", "Χ", "Ψ", "Ω", 
           "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω"          

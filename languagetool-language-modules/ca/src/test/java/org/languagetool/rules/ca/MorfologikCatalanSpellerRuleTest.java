@@ -434,6 +434,10 @@ public class MorfologikCatalanSpellerRuleTest {
         assertEquals("veure's", matches[0].getSuggestedReplacements().get(0));
         assertEquals("beures", matches[0].getSuggestedReplacements().get(1));
         
+        matches = rule.match(langTool.getAnalyzedSentence("serlo"));
+        assertEquals("ser-lo", matches[0].getSuggestedReplacements().get(0));
+        matches = rule.match(langTool.getAnalyzedSentence("verlo"));
+        assertEquals("ser-lo", matches[0].getSuggestedReplacements().get(0));
         matches = rule.match(langTool.getAnalyzedSentence("relajarme"));
         assertEquals("relatar-me", matches[0].getSuggestedReplacements().get(0));
         //assertEquals("relaxar-me", matches[0].getSuggestedReplacements().get(1)); next dict update!
@@ -455,6 +459,10 @@ public class MorfologikCatalanSpellerRuleTest {
         matches = rule.match(langTool.getAnalyzedSentence("norueg"));
         assertEquals("noruega", matches[0].getSuggestedReplacements().get(0));
         assertEquals("noruec", matches[0].getSuggestedReplacements().get(1));
+        //matches = rule.match(langTool.getAnalyzedSentence("prenense"));
+        //assertEquals("prenent-se", matches[0].getSuggestedReplacements().get(0));
+        matches = rule.match(langTool.getAnalyzedSentence("cual"));
+        assertEquals("qual", matches[0].getSuggestedReplacements().get(0));
         
         //Ela geminada 
         matches = rule.match(langTool.getAnalyzedSentence("La sol•licitud"));

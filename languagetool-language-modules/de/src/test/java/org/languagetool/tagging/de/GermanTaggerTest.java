@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.languagetool.AnalyzedToken;
 import org.languagetool.AnalyzedTokenReadings;
 import org.languagetool.JLanguageTool;
+import org.languagetool.tagging.TaggedWord;
 
 import java.io.IOException;
 import java.util.*;
@@ -60,6 +61,18 @@ public class GermanTaggerTest {
     assertTrue(tagger.tag(Arrays.asList("jede", "*", "r", "Mitarbeiter", "*", "in")).get(3).hasPartialPosTag("SUB:NOM:SIN:MAS"));
   }
   
+  @Test
+  public void testIgnoreDomain() throws IOException {
+    List<AnalyzedTokenReadings> aToken = tagger.tag(Arrays.asList("bundestag", ".", "de"));
+    assertFalse(aToken.get(0).isTagged());
+  }
+
+  @Test
+  public void testIgnoreImperative() throws IOException {
+    List<AnalyzedTokenReadings> aToken = tagger.tag(Arrays.asList("zehnfach"));
+    assertFalse(aToken.get(0).isTagged());
+  }
+
   @Test
   public void testTagger() throws IOException {
     AnalyzedTokenReadings aToken = tagger.lookup("Haus");
@@ -258,9 +271,10 @@ public class GermanTaggerTest {
 
     List<AnalyzedTokenReadings> result3 = tagger.tag(Collections.singletonList("zurückgeschickt"));
     assertThat(result3.size(), is(1));
-    assertThat(result3.get(0).getReadings().size(), is(1));
+    assertThat(result3.get(0).getReadings().size(), is(2));
     String res3 = result3.toString();
     assertTrue(res3.contains("zurückschicken/VER:PA2:SFT*"));
+    assertTrue(res3.contains("PA2:PRD:GRU:VER*"));
     assertFalse(res3.contains("ADJ:"));
 
     List<AnalyzedTokenReadings> result4 = tagger.tag(Collections.singletonList("abzuschicken"));

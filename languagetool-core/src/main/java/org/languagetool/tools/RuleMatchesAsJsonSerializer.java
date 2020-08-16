@@ -22,6 +22,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import org.languagetool.DetectedLanguage;
 import org.languagetool.JLanguageTool;
+import org.languagetool.Language;
+import org.languagetool.Tag;
 import org.languagetool.markup.AnnotatedText;
 import org.languagetool.markup.AnnotatedTextBuilder;
 import org.languagetool.rules.*;
@@ -45,16 +47,25 @@ public class RuleMatchesAsJsonSerializer {
   private static final JsonFactory factory = new JsonFactory();
   
   private final int compactMode;
+  private final Language lang;
 
   public RuleMatchesAsJsonSerializer() {
-    this.compactMode = 0;
+    this(0, null);
   }
 
   /**
    * @since 4.7
    */
   public RuleMatchesAsJsonSerializer(int compactMode) {
+    this(compactMode, null);
+  }
+
+  /**
+   * @since 5.1
+   */
+  public RuleMatchesAsJsonSerializer(int compactMode, Language lang) {
     this.compactMode = compactMode;
+    this.lang = lang;
   }
 
   public String ruleMatchesToJson(List<RuleMatch> matches, String text, int contextSize, DetectedLanguage detectedLang) {
@@ -178,13 +189,22 @@ public class RuleMatchesAsJsonSerializer {
   }
 
   private String cleanSuggestion(String s) {
-    return s.replace("<suggestion>", "\"").replace("</suggestion>", "\"");
+    if (lang != null) {
+      return lang.toAdvancedTypography(s.replaceAll("<suggestion>", lang.getOpeningQuote()).replaceAll("</suggestion>", lang.getClosingQuote()));
+    } else {
+      return s.replace("<suggestion>", "\"").replace("</suggestion>", "\"");
+    }
   }
   
   private void writeReplacements(JsonGenerator g, RuleMatch match) throws IOException {
     g.writeArrayFieldStart("replacements");
     boolean autoCorrect = match.isAutoCorrect();
+    int i = 0;
     for (SuggestedReplacement replacement : match.getSuggestedReplacementObjects()) {
+      i++;
+      if (compactMode == 1 && i > 5) {  // these clients only show up to 5 suggestions anyway
+        break;
+      }
       g.writeStartObject();
       g.writeStringField("value", replacement.getReplacement());
       if (replacement.getShortDescription() != null) {
@@ -233,7 +253,7 @@ public class RuleMatchesAsJsonSerializer {
       if (pRule.getSubId() != null) {
         g.writeStringField("subId", pRule.getSubId());
       }
-      if (pRule.getSourceFile() != null && !pRule.getSourceFile().endsWith("/grammar.xml")) {
+      if (pRule.getSourceFile() != null && compactMode != 1) {
         g.writeStringField("sourceFile", pRule.getSourceFile().replaceFirst(".*/", ""));
       }
     }
@@ -254,6 +274,13 @@ public class RuleMatchesAsJsonSerializer {
       g.writeEndArray();
     }
     writeCategory(g, rule.getCategory());
+    if (rule.getTags().size() > 0) {
+      g.writeArrayFieldStart("tags");
+      for (Tag tag : rule.getTags()) {
+        g.writeString(tag.name());
+      }
+      g.writeEndArray();
+    }
     g.writeEndObject();
   }
 

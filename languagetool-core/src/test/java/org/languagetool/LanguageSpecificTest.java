@@ -29,6 +29,7 @@ import org.languagetool.tagging.disambiguation.rules.DisambiguationRuleTest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static junit.framework.Assert.fail;
 import static org.junit.Assert.*;
@@ -112,6 +113,7 @@ public class LanguageSpecificTest {
           assertIdUniqueness(idsToClassName, ruleClasses, language, rule);
           assertIdValidity(language, rule);
           assertTrue(rule.supportsLanguage(language));
+          rule.setTags(rule.getTags().stream().filter(k -> !k.equals(Tag.picky)).collect(Collectors.toList()));  // make sure "picky" rules also run
           testExamples(rule, lt);
         }
       }
@@ -261,9 +263,14 @@ public class LanguageSpecificTest {
   private void countTempOffRules(Language lang) {
     JLanguageTool lt = new JLanguageTool(lang);
     int count = 0;
+    Map<String,Integer> fileToCount = new TreeMap<>();
     for (Rule rule : lt.getAllRules()) {
       if (rule.isDefaultTempOff()) {
         count++;
+        if (rule instanceof AbstractPatternRule) {
+          String sourceFile = ((AbstractPatternRule) rule).getSourceFile();
+          fileToCount.put(sourceFile, fileToCount.getOrDefault(sourceFile, 0) + 1);
+        }
       }
     }
     System.out.println("Number of default='temp_off' rules for " + lang + ": " + count);
@@ -273,6 +280,10 @@ public class LanguageSpecificTest {
       System.err.println("WARNING: " + count + " default='temp_off' rules for " + lang + ", please make sure to turn on these");
       System.err.println("WARNING: rules after they have been tested (or use default='off' to turn them off permanently)");
       System.err.println("WARNING: (this warning appears if there are more than " + limit + " default='temp_off' rules)");
+      System.err.println("WARNING: temp_off rules by file:");
+      for (Map.Entry<String, Integer> entry : fileToCount.entrySet()) {
+        System.err.println("WARNING: " + entry.getValue() + " in " + entry.getKey());
+      }
       System.err.println("################################################################################################");
     }
   }

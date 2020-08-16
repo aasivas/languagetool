@@ -25,7 +25,10 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.languagetool.tools.StringTools;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -44,6 +47,10 @@ class HttpApiSentenceChecker {
   private final String langCode;
   private final int threadCount;
   private final String token;
+  @Nullable
+  private final String user;
+  @Nullable
+  private final String password;
 
   public HttpApiSentenceChecker(CommandLine cmd) {
     baseUrl = cmd.hasOption("url") ? cmd.getOptionValue("url") : "https://api.languagetool.org";
@@ -53,6 +60,8 @@ class HttpApiSentenceChecker {
     langCode = cmd.getOptionValue("lang");
     threadCount = Integer.parseInt(cmd.getOptionValue("threads"));
     token = cmd.hasOption("token") ? cmd.getOptionValue("token") : null;
+    user = cmd.hasOption("user") ? cmd.getOptionValue("user") : null;
+    password = cmd.hasOption("password") ? cmd.getOptionValue("password") : null;
   }
 
   private void run(File input, File output) throws IOException, InterruptedException, ExecutionException {
@@ -136,7 +145,7 @@ class HttpApiSentenceChecker {
       if (file.length() == 0) {
         continue;
       }
-      callables.add(new CheckCallable(count, baseUrl, token, file, langCode));
+      callables.add(new CheckCallable(count, baseUrl, token, file, langCode, user, password));
       count++;
     }
     List<Future<File>> futures = execService.invokeAll(callables);
@@ -158,7 +167,11 @@ class HttpApiSentenceChecker {
         List<String> lines = Files.readAllLines(threadFile.toPath());
         for (String line : lines) {
           JsonNode node = mapper.readTree(line);
-          buildDates.add(node.get("software").get("buildDate").asText());
+          JsonNode date = node.get("software").get("buildDate");
+          if (date.isNull() && !line.contains(CheckCallable.FAIL_MESSAGE)) {
+            System.err.println("WARNING: 'null' buildDate in " + threadFile + " with " + lines.size() + " lines, line: " + StringUtils.abbreviate(line, 500));
+          }
+          buildDates.add(date.asText());
           fw.write(line);
           fw.write('\n');
         }
@@ -167,7 +180,7 @@ class HttpApiSentenceChecker {
     }
     if (buildDates.size() > 1) {
       System.err.println("-----------------------------------------------------");
-      System.err.println("WARNING: inconsistent build dates across API servers: Found " + buildDates);
+      System.err.println("WARNING: inconsistent build dates across API servers ('null' can be ignored): Found " + buildDates);
       System.err.println("-----------------------------------------------------");
     } else {
       System.out.println("All requests answered by API servers with build date " + buildDates);
@@ -183,6 +196,9 @@ class HttpApiSentenceChecker {
     options.addRequiredOption(null, "output", true, "Output file");
     options.addOption(null, "token", true, "Secret token to skip server's limits");
     options.addOption(null, "url", true, "Base URL, defaults to https://api.languagetool.org");
+    options.addOption(null, "user", true, "User name for authentication (Basic Auth)");
+    // TODO: read from file instead of command line
+    options.addOption(null, "password", true, "Password for authentication (Basic Auth)");
     CommandLine cmd = new DefaultParser().parse(options, args);
     HttpApiSentenceChecker checker = new HttpApiSentenceChecker(cmd);
     checker.run(new File(cmd.getOptionValue("input")), new File(cmd.getOptionValue("output")));

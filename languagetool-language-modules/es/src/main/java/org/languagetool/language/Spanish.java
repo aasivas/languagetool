@@ -36,10 +36,15 @@ import org.languagetool.tokenizers.es.SpanishWordTokenizer;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Spanish extends Language implements AutoCloseable{
 
   private LanguageModel languageModel;
+  
+  private static final Pattern APOSTROPHE = Pattern.compile("(\\p{L})'([\\p{L}\u202f\u00a0 !\\?,\\.;:])",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
   @Override
   public String getName() {
@@ -98,21 +103,25 @@ public class Spanish extends Language implements AutoCloseable{
   @Override
   public List<Rule> getRelevantRules(ResourceBundle messages, UserConfig userConfig, Language motherTongue, List<Language> altLanguages) throws IOException {
     return Arrays.asList(
-            new CommaWhitespaceRule(messages),
+            new CommaWhitespaceRule(messages,
+                Example.wrong("En su opinión<marker> ,</marker> no era verdad."),
+                Example.fixed("En su opinión<marker>,</marker> no era verdad.")),
             new DoublePunctuationRule(messages),
-            new GenericUnpairedBracketsRule(messages,
-                    Arrays.asList("[", "(", "{", "“", "«", "»"),
-                    Arrays.asList("]", ")", "}", "”", "»", "«")),
+            new SpanishUnpairedBracketsRule(messages),
             new QuestionMarkRule(messages),
             new MorfologikSpanishSpellerRule(messages, this, userConfig, altLanguages),
-            new UppercaseSentenceStartRule(messages, this),
-            new WordRepeatRule(messages, this),
+            new UppercaseSentenceStartRule(messages, this, 
+                Example.wrong("Venta al público. <marker>ha</marker> subido mucho."),
+                Example.fixed("Venta al público. <marker>Ha</marker> subido mucho.")),
+            new SpanishWordRepeatRule(messages, this),
             new MultipleWhitespaceRule(messages, this),
             new SpanishWikipediaRule(messages),
             new SpanishWrongWordInContextRule(messages),
+            new LongSentenceRule(messages, userConfig, 35, true, true),
+            new LongParagraphRule(messages, this, userConfig),
             new SimpleReplaceRule(messages),
-            new SimpleReplaceVerbsRule(messages, this),
-            new SimpleReplaceAnglicismRule(messages)
+            new SimpleReplaceVerbsRule(messages, this)
+            //new SimpleReplaceAnglicismRule(messages)
     );
   }
 
@@ -129,6 +138,46 @@ public class Spanish extends Language implements AutoCloseable{
     return Arrays.asList(
             new SpanishConfusionProbabilityRule(messages, languageModel, this)
     );
+  }
+  
+  /** @since 5.1 */
+  public String getOpeningQuote() {
+    return "«";
+  }
+
+  /** @since 5.1 */
+  public String getClosingQuote() {
+    return "»";
+  }
+  
+  @Override
+  public String toAdvancedTypography (String input) {
+    String output = input;
+    
+    // Apostrophe and closing single quote
+    Matcher matcher = APOSTROPHE.matcher(output);
+    output = matcher.replaceAll("$1’$2");
+    
+    // single quotes
+    if (output.startsWith("'")) { 
+      output = output.replaceFirst("'", "‘");
+    }
+    output = output.replaceAll(" '", " ‘");
+    if (output.endsWith("'")) { 
+      output = output.substring(0, output.length() - 1 ) + "’";
+    }
+
+    // guillemets
+    if (output.startsWith("\"")) { 
+      output = output.replaceFirst("\"", "«");
+    }
+    if (output.endsWith("\"")) { 
+      output = output.substring(0, output.length() - 1 ) + "»";
+    }
+    output = output.replaceAll(" \"", " «");
+    output = output.replaceAll("\"([\\u202f\\u00a0 !\\?,\\.;:])", "»$1");   
+    
+    return output;
   }
 
   /**
@@ -148,22 +197,45 @@ public class Spanish extends Language implements AutoCloseable{
   }
   
   @Override
-  public int getPriorityForId(String id) {
+  protected int getPriorityForId(String id) {
     switch (id) {
+      case "CONFUSIONS2": return 50; // greater than CONFUSIONS
+      case "TE_TILDE": return 50;
+      case "PLURAL_SEPARADO": return 50;
       case "INCORRECT_EXPRESSIONS": return 40;
       case "MISSPELLING": return 40;  
       case "CONFUSIONS": return 40;
       case "NO_SEPARADO": return 40;
       case "DIACRITICS": return 30;
+      case "POR_CIERTO": return 30;
+      case "LO_LOS": return 30;
+      case "SE_CREO": return 25; // less than DIACRITICS_VERB_N_ADJ
+      case "PRONOMBRE_SIN_VERBO": return 25; // inside CONFUSIONS, but less than other rules ?
+      case "AGREEMENT_DET_ABREV": return 25; // greater than AGREEMENT_DET_NOUN
+      case "MUCHO_NF": return 25; // greater than AGREEMENT_DET_NOUN
       case "AGREEMENT_DET_NOUN": return 20;
+      //case "PRONOMBRE_SIN_VERBO": return 20;
+      case "AGREEMENT_DET_ADJ": return 10;
       case "TYPOGRAPHY": return 10;
       case "HALLA_HAYA": return 10;
+      case "VALLA_VAYA": return 10;
+      case "ES_SIMPLE_REPLACE": return 10;
+      case "SEPARADO": return 1;
+      case "E_EL": return -10;
       case "EL_TILDE": return -10;
-      case "PREPOSICION_VERBO": return -20;
+      case "TOO_LONG_PARAGRAPH": return -15;
+      case "PREP_VERB": return -20;
       case "SUBJUNTIVO_FUTURO": return -30;
       case "SUBJUNTIVO_PASADO": return -30;
       case "SUBJUNTIVO_PASADO2": return -30;
+      case "AGREEMENT_ADJ_NOUN": return -30;
+      case "AGREEMENT_PARTICIPLE_NOUN": return -30;
+      case "AGREEMENT_POSTPONED_ADJ": return -30;
+      case "VOSEO": return -40;
+      case "MORFOLOGIK_RULE_ES": return -100;
+      case "UPPERCASE_SENTENCE_START": return -200;
     }
+    //STYLE is -50
     return super.getPriorityForId(id);
   }
 

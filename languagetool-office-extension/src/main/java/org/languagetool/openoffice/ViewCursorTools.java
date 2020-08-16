@@ -51,7 +51,7 @@ public class ViewCursorTools {
    * Returns null if it fails
    */
   @Nullable
-  private XTextViewCursor getViewCursor() {
+  public XTextViewCursor getViewCursor() {
     try {
       XComponent xCurrentComponent = xDesktop.getCurrentComponent();
       if (xCurrentComponent == null) {
@@ -74,6 +74,48 @@ public class ViewCursorTools {
     } catch (Throwable t) {
       MessageHandler.printException(t);     // all Exceptions thrown by UnoRuntime.queryInterface are caught
       return null;           // Return null as method failed
+    }
+  }
+  
+  /** 
+   * Returns text cursor from start of ViewCursor 
+   * Returns null if method fails
+   */
+  XTextCursor getTextCursorBeginn() {
+    try {
+      XTextViewCursor xVCursor = getViewCursor();
+      if (xVCursor == null) {
+        return null;
+      }
+      XText xDocumentText = xVCursor.getText();
+      if (xDocumentText == null) {
+        return null;
+      }
+      return xDocumentText.createTextCursorByRange(xVCursor.getStart());
+    } catch (Throwable t) {
+      MessageHandler.printException(t);     // all Exceptions thrown by UnoRuntime.queryInterface are caught
+      return null;             // Return null as method failed
+    }
+  }
+  
+  /** 
+   * Returns text cursor from end of ViewCursor 
+   * Returns null if method fails
+   */
+  XTextCursor getTextCursorEnd() {
+    try {
+      XTextViewCursor xVCursor = getViewCursor();
+      if (xVCursor == null) {
+        return null;
+      }
+      XText xDocumentText = xVCursor.getText();
+      if (xDocumentText == null) {
+        return null;
+      }
+      return xDocumentText.createTextCursorByRange(xVCursor.getEnd());
+    } catch (Throwable t) {
+      MessageHandler.printException(t);     // all Exceptions thrown by UnoRuntime.queryInterface are caught
+      return null;             // Return null as method failed
     }
   }
   
@@ -131,6 +173,7 @@ public class ViewCursorTools {
       if (xParagraphCursor == null) {
         return -1;
       }
+      xParagraphCursor.collapseToStart();
       xParagraphCursor.gotoStartOfParagraph(true);
       return xParagraphCursor.getString().length();
     } catch (Throwable t) {

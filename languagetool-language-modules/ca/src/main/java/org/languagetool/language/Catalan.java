@@ -34,11 +34,16 @@ import org.languagetool.tokenizers.ca.CatalanWordTokenizer;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Catalan extends Language {
 
   private static final Language DEFAULT_CATALAN = new Catalan();
 
+  private static final Pattern APOSTROPHE = Pattern.compile("(\\p{L})'([\\p{L}\u202f\u00a0 !\\?,\\.;:\"«'])",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+  
   @Override
   public String getName() {
     return "Catalan";
@@ -83,10 +88,9 @@ public class Catalan extends Language {
             new CatalanUnpairedQuestionMarksRule(messages, this),
             new CatalanUnpairedExclamationMarksRule(messages, this),
             new AccentuationCheckRule(messages),
-            new ComplexAdjectiveConcordanceRule(messages),
+            new PostponedAdjectiveConcordanceRule(messages),
             new CatalanWrongWordInContextRule(messages),
             new CatalanWrongWordInContextDiacriticsRule(messages),
-            new ReflexiveVerbsRule(messages),
             new SimpleReplaceVerbsRule(messages, this),
             new SimpleReplaceBalearicRule(messages),
             new SimpleReplaceRule(messages),
@@ -126,6 +130,46 @@ public class Catalan extends Language {
   public Tokenizer createDefaultWordTokenizer() {
     return new CatalanWordTokenizer();
   }
+  
+  /** @since 5.1 */
+  public String getOpeningQuote() {
+    return "«";
+  }
+
+  /** @since 5.1 */
+  public String getClosingQuote() {
+    return "»";
+  }
+  
+  @Override
+  public String toAdvancedTypography (String input) {
+    String output = input;
+    
+    // Apostrophe and closing single quote
+    Matcher matcher = APOSTROPHE.matcher(output);
+    output = matcher.replaceAll("$1’$2");
+    
+    // single quotes
+    if (output.startsWith("'")) { 
+      output = output.replaceFirst("'", "‘");
+    }
+    output = output.replaceAll("(['’ ])'", "$1‘");
+    if (output.endsWith("'")) { 
+      output = output.substring(0, output.length() - 1 ) + "’";
+    }
+
+    // guillemets
+    if (output.startsWith("\"")) { 
+      output = output.replaceFirst("\"", "«");
+    }
+    if (output.endsWith("\"")) { 
+      output = output.substring(0, output.length() - 1 ) + "»";
+    }
+    output = output.replaceAll("(['’ ])\"", "$1«");
+    output = output.replaceAll("\"([\\u202f\\u00a0 !\\?,\\.;:])", "»$1");   
+    
+    return output;
+  }
 
   @Override
   public LanguageMaintainedState getMaintainedState() {
@@ -133,22 +177,31 @@ public class Catalan extends Language {
   }
 
   @Override
-  public int getPriorityForId(String id) {
+  protected int getPriorityForId(String id) {
     switch (id) {
       case "CA_SIMPLE_REPLACE_BALEARIC": return 100;
       case "INCORRECT_EXPRESSIONS": return 50;
       case "MOTS_NO_SEPARATS": return 40;
+      case "REPETEAD_ELEMENTS": return 40;
+      case "ESPAIS_SOBRANTS": return 40; // greater than L
       case "CONCORDANCES_CASOS_PARTICULARS": return 30;
+      case "GERUNDI_PERD_T": return 30;
+      case "CONFUSIONS": return 30;
+      case "INCORRECT_WORDS_IN_CONTEXT": return 30; // similar to CONFUSIONS
       case "CONFUSIONS_ACCENT": return 20;
       case "DIACRITICS": return 20;
+      case "PASSAT_PERIFRASTIC": return 20;
+      case "PRONOMS_FEBLES_SOLTS2": return 20;  // greater than PRONOMS_FEBLES_SOLTS
+      case "ORDINALS": return 20; // greater than SEPARAT
       case "ACCENTUATION_CHECK": return 10;
       case "HAVER_SENSE_HAC": return 10;
       case "CONCORDANCES_DET_NOM": return 5;
+      case "VENIR_NO_REFLEXIU": return 5;
       case "REGIONAL_VERBS": return -10;
       case "FALTA_COMA_FRASE_CONDICIONAL": return -20;
-      case "SUBSTANTIUS_JUNTS": return -25;
       case "MUNDAR": return -50;
       case "MORFOLOGIK_RULE_CA_ES": return -100;
+      case "SUBSTANTIUS_JUNTS": return -150;
       case "FALTA_ELEMENT_ENTRE_VERBS": return -200;
       case "NOMBRES_ROMANS": return -400;
       case "UPPERCASE_SENTENCE_START": return -500;

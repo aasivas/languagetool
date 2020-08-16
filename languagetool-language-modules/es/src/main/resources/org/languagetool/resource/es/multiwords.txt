@@ -1,3 +1,186 @@
+E. coli	NCFS000
+Escherichia coli	NCFS000
+haute cuisine	NCFS000
+copia y pega	NCMS000
+La La Land	NPCNO00
+The Daily Telegraph	NPMSO00
+The Economist	NPMSO00
+The Guardian	NPMSO00
+The New York Times	NPMSO00
+The Telegraph	NPMSO00
+The Times	NPMSO00
+The Wall Street Journal	NPMSO00
+The Washington Post	NPMSO00
+Wall Street Journal	NPMSO00
+Washington Post	NPMSO00
+New York Times	NPMSO00
+Wall Street	NPCSG00
+Rolls Royce	NPCNSP0
+São Paulo	NPCSG00
+Downin Street	NPCSG00
+quítame allá estas pajas	NCMS000
+quítame allá esas pajas	NCMS000
+quítame allá	NCMS000
+sálvese quien pueda	NCMS000
+Benjamin Constant	NPMSSP0
+Luo Guanzhong	NPMSSP0
+Frank Capra	NPMSSP0
+Buster Keaton	NPMSSP0
+mago de Oz	NCMS000
+Stabat Mater	NCMN000
+Giovanni Battista	NPMSSP0
+Johann Sebastian	NPMSSP0
+Le Pen	NPCNSP0
+I+D	NCFS000
+Río de la Plata	NPMSG00
+Río Negro	NPMSG00
+Río Grande	NPMSG00
+Viña del Mar	NPFSG00
+Roquetas de Mar	NPFPG00
+de buena tinta	LOC_ADV
+New Deal	NCMS000
+Os Lusíadas	NPMPO00
+Te Deum	NCMS000
+Le Corbusier	NPCNSP0
+dale que te dale	LOC_ADV
+Le Monde	NPMSO00
+Le Soir	NPMSO00
+Le Mans	NPCSG00
+Europa Press	NPCSO00
+Ortega y Gasset	NPMSSP0
+Primavera Sound	NPMSO00
+día a día	LOC_ADV
+hip hop	NCMS000
+San Silvestre	NPCSO00
+San Silvestres	NPCPO00
+Guardamar del Segura	NPCSG00
+de a pie	LOC_ADJ
+#de pie	LOC_ADV
+a pie juntillas	LOC_ADV
+a pies juntillas	LOC_ADV
+drag queen	NCFS000
+drag queens	NCFP000
+drag king	NCMS000
+drag kings	NCMP000
+Mona Lisa	NPFSSP0
+al dente	LOC_ADJ
+después de Cristo	LOC_ADV
+antes de Cristo	LOC_ADV
+Steven Spielberg	NPMSSP0
+Immanuel Kant	NPMSSP0
+Robin Hood	NPMSSP0
+Golden Gate	NPMSG00
+de verdad	LOC_ADV
+bajo custodia	LOC_ADV
+boa constrictor	NCFS000
+boas constrictor	NCFP000
+azul oscuro	AQ0CN0
+azul marino	AQ0CN0
+sin duda	LOC_ADV
+a su vez	LOC_ADV
+al mismo tiempo	LOC_ADV
+un poco	LOC_ADV
+un tanto	LOC_ADV
+paso a paso	LOC_ADV
+peso mosca	NCMS000
+pesos mosca	NCMP000
+peso pluma	NCMS000
+pesos pluma	NCMP000
+música dance	NCFS000
+música trance	NCFS000
+penalti remate	NCMS000
+gotelé temple	NCMS000
+tecla escape	NCFS000
+placa base	NCFS000
+placas base	NCFP000
+datos serie	NCMP000
+buses serie	NCMP000
+bus serie	NCMS000
+puertos serie	NCMP000
+puerto serie	NCMS000
+bajo mínimos	LOC_ADV
+uva pasa	NCFS000
+uvas pasas	NCFP000
+higos pasos	NCMP000
+higo paso	NCMS000
+zona centro	NCFS000
+carta documento	NCFS000
+operación triunfo	NCFS000
+Operación Triunfo	NPFSO00
+dieta paleo	NCFS000
+cuello pico	NCMS000
+foto archivo	NCFS000
+contorno de ojos	NCMS000
+master class	NCFN000
+niño soldado	NCMS000
+niños soldado	NCMP000
+niña soldado	NCFS000
+niñas soldado	NCFP000
+fecha tope	NCFS000
+bono transporte	NCMS000
+bonos transporte	NCMP000
+abono transporte	NCMS000
+abonos transporte	NCMP000
+Oscar Wilde	NPMSSP0
+Far West	NPMSG00
+Lucky Luke	NPMSSP0
+Brad Pitt	NPMSSP0
+Beverly Hills	NPCSG00
+Emilia Romaña	NPFSG00
+Washington DC	NPCSG00
+Open Arms	NPCSO00
+III Reich	NPMSO00
+Tercer Reich	NPMSO00
+ex ante	LOC_ADV
+ex post	LOC_ADV
+ex-ante	LOC_ADV
+ex-post	LOC_ADV
+Library of Congress Online Catalog	NPFSO00 
+Library of Congress	NPFSO00
+Futbol Club	NPMSO00
+Sport Club	NPMSO00
+acqua alta	NCFS000
+CC BY	LOC_ADJ
+CC BY-SA	LOC_ADJ
+CC BY-NC	LOC_ADJ
+CC BY-NC-SA	LOC_ADJ
+CC BY-ND	LOC_ADJ
+CC BY-NC-ND	LOC_ADJ
+CC0	LOC_ADJ
+ex nihilo	LOC_ADV
+volens nolens	LOC_ADV
+Mª	NPCNSP0
+M.ª	NPCNSP0
+tex-mex	AQ0CN0
+Tex-Mex	AQ0CN0
+cara dura	NPCS000
+caras duras	NPCP000
+Tel Aviv	NPCS000
+Pearl Harbor	NPCS000
+Torrejón de Ardoz	NPCS000
+tour operador	NCMS000
+tour operator	NCMS000
+tour operadores	NCMP000
+tour operators	NCMP000
+a lo menos	LOC_ADV
+gallo pinto	NCMS000
+alto el fuego	NCMN000
+alto al fuego	NCMN000
+Echo Park	NPMSG00
+corre que te pillo	NCS000
+al pairo	LOC_ADV
+par de apriete	NCMS000
+de veras	LOC_ADV
+casa de Tócame Roque	NCFS000
+ex novo	LOC_ADV
+de novo	LOC_ADV
+justicia mayor	NCMS000
+justicias mayores	NCMP000
+Justicia Mayor	NCMS000
+data mart	NCMS000
+data marts	NCMP000
+piel roja	NCCS000
+pieles rojas	NCCP000
 Países Bajos	NPMPG00
 Estados Unidos	NPMPG00
 Rand Corporation	NCFSO00
@@ -9,6 +192,7 @@ a la carbonara	AQ0CN0
 L'Équipe	NCMSO00
 esfera armilar	NCFS000
 dance pop	AQ0CN0
+dance electrónico	NCMS000
 Super Bowl	NPCSO00
 World Trade Center	NPMSG00
 Santa Coloma	NPFSG00
@@ -20,6 +204,8 @@ moto club	NPMS000
 moto clubs	NPMP000
 call center	NPMS000
 call centers	NPMP000
+call centre	NPMS000
+call centres	NPMP000
 déjà vu	NPMNO00
 ménage à trois	NPMNO00
 prêt-à-porter	AQ0CN0
@@ -77,6 +263,9 @@ euro-zona	NCFS000
 taca-taca	NCMS000
 el más allá	NCMS000
 boca a boca	NCMS000
+voz a voz	NCMS000
+boca a oreja	NCMS000
+boca oreja	NCMS000
 piedra-papel-tijera	NCMS000
 un boca sucia	NCMS000
 La Haya	NPFSG00
@@ -94,17 +283,17 @@ ADN polimerasas	NCFP000
 María del Carmen	NPFSSP0
 Royal Society	NPFSO00
 Royal Academy	NPFSO00
-Homo sapiens	NCMN000
-Homo habilis	NCMN000
-Homo erectus	NCMN000
-Homo antecessor	NCMN000
-Homo rudolfensis	NCMN000
-Homo ergaster	NCMN000
-Homo heidelbergensis	NCMN000
-Homo neanderthalensis	NCMN000
-Homo rhodesiensis	NCMN000
-Homo sapiens idaltu	NCMN000
-Homo sapiens sapiens	NCMN000
+homo sapiens	NCMN000
+homo habilis	NCMN000
+homo erectus	NCMN000
+homo antecessor	NCMN000
+homo rudolfensis	NCMN000
+homo ergaster	NCMN000
+homo heidelbergensis	NCMN000
+homo neanderthalensis	NCMN000
+homo rhodesiensis	NCMN000
+homo sapiens idaltu	NCMN000
+homo sapiens sapiens	NCMN000
 a anequín	LOC_ADV
 a asentadillas	LOC_ADV
 a barlovento	LOC_ADV
@@ -370,6 +559,7 @@ a más tardar	LOC_ADV
 a más ver	LOC_ADV
 a más y mejor	LOC_ADV
 a nado	LOC_ADV
+de nado	LOC_ADJ
 a no ser que	LOC_CS
 a nombre de	LOC_PREP
 a ojo de buen cubero	LOC_ADV
@@ -754,6 +944,7 @@ art brut	AQ0CN0
 art.	Y
 art.º	Y
 Arz.	Y
+Ayto.	Y
 así como también	LOC_ADV
 así como tampoco	LOC_ADV
 así pues	LOC_ADV
@@ -1030,7 +1221,7 @@ de al lado de	LOC_PREP
 de alto copete	LOC_ADV
 de alto coturno	LOC_ADV
 de altos vuelos	LOC_ADV
-de amplio espectro	LOC_ADV
+#de amplio espectro	LOC_ADJ
 de andar por casa	LOC_ADV
 de anequín	LOC_ADV
 de antemano	LOC_ADV
@@ -1304,7 +1495,6 @@ de vértigo	LOC_ADV
 de vía estrecha	LOC_ADV
 de órdago	LOC_ADV
 debajo de	LOC_PREP
-debido a	LOC_PREP
 decreto ley	NCMS000
 decretos leyes	NCMS000
 del otro lado	LOC_ADV
@@ -1340,9 +1530,7 @@ dirección a	LOC_PREP
 do ut des	LOC_ADV
 doc.	Y
 dpto.	Y
-Dr.	NCMS000
 Dr.ª	NCFS000
-Dra.	NCFS000
 dto.	Y
 dupdo.	Y
 duty free	LOC_ADJ
@@ -1451,7 +1639,7 @@ en materia de	LOC_PREP
 en medio de	LOC_PREP
 en memoria de	LOC_PREP
 en menos de	LOC_PREP
-en miniatura	LOC_ADV
+#en miniatura	LOC_ADV
 en mitad de	LOC_PREP
 en modo alguno	LOC_ADV
 en obligación de	LOC_PREP
@@ -1532,7 +1720,9 @@ entre que	LOC_CS
 entre tanto que	LOC_CS
 es hablar por demás	LOC_ADV
 esperando a	LOC_PREP
-et ál.	Y
+et al.	Y
+et alii	Y
+AA. VV.	Y
 etc.	Y
 ex abrupto	LOC_ADV
 ex aequo	LOC_ADV
@@ -1761,7 +1951,7 @@ no ha lugar	LOC_ADV
 no obstante	LOC_ADV
 no sea que	LOC_CS
 noli me tangere	LOC_ADV
-non bis in idem	LOC_ADV
+non bis in idem	NCMS000
 non plus ultra	LOC_ADV
 nora en tal	LOC_ADV
 nora tal	LOC_ADV
@@ -1873,6 +2063,7 @@ por duplicado	LOC_ADV
 por ejemplo	LOC_ADV
 por el centro de	LOC_PREP
 por el contrario	LOC_ADV
+por contra	LOC_ADV
 por el otro lado de	LOC_PREP
 por en medio	LOC_ADV
 por ende	LOC_ADV
@@ -1917,7 +2108,7 @@ por separado	LOC_ADV
 por si acaso	LOC_ADV
 por si las moscas	LOC_ADV
 por siempre jamás	LOC_ADV
-por supuesto	LOC_ADV
+#por supuesto	LOC_ADV
 por testa	LOC_ADV
 por todo lo alto	LOC_ADV
 por un tris	LOC_ADV
@@ -2088,9 +2279,7 @@ sobre manera	LOC_ADV
 sobre seguro	LOC_ADV
 Soc.	Y
 sotto voce	LOC_ADV
-Sr.	Y
 Sr.ª	Y
-Sra.	Y
 Sri Lanka	NPCSG00
 Srta.	Y
 Sta.	Y
@@ -2102,6 +2291,7 @@ sub iudice	LOC_ADV
 sub judice	LOC_ADV
 sub voce	LOC_ADV
 sui géneris	LOC_ADV
+sui generis	LOC_ADV
 supuesto que	LOC_CS
 t.	Y
 tabula gratulatoria	NCFS000
@@ -2115,7 +2305,7 @@ tan siquiera	LOC_ADV
 tanto menos que	LOC_CS
 tanto más que	LOC_CS
 tanto peor	LOC_ADV
-tanto por ciento	LOC_ADV
+tanto por ciento	NCMS000
 tanto por tanto	LOC_ADV
 Tantum ergo	NCMS000
 tel.	Y

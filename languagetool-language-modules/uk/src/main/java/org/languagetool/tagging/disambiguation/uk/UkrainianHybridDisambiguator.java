@@ -90,6 +90,7 @@ public class UkrainianHybridDisambiguator extends AbstractDisambiguator {
   public AnalyzedSentence preDisambiguate(AnalyzedSentence input) {
     removeVmis(input);
     retagInitials(input);
+    retagUnknownInitials(input);
     removeInanimVKly(input);
     removePluralForNames(input);
     removeLowerCaseHomonymsForAbbreviations(input);
@@ -175,7 +176,7 @@ public class UkrainianHybridDisambiguator extends AbstractDisambiguator {
           
           if( PosTagHelper.hasPosTagPart(analyzedToken, ":bad") 
               && lowerLemmaToCheck.equals(analyzedToken.getLemma()) ) {
-            tokens[i].removeReading(analyzedToken, this.toString());
+            tokens[i].removeReading(analyzedToken, "lowercase_bad_vs_uppercase_good");
           }
         }
       }
@@ -195,7 +196,7 @@ public class UkrainianHybridDisambiguator extends AbstractDisambiguator {
           
           if( ! PosTagHelper.hasPosTagPart(analyzedToken, ":abbr") 
               && ! JLanguageTool.SENTENCE_END_TAGNAME.equals(analyzedToken) ) {
-            tokens[i].removeReading(analyzedToken, this.toString());
+            tokens[i].removeReading(analyzedToken, "lowercase_vs_abbr");
           }
         }
       }
@@ -235,13 +236,17 @@ public class UkrainianHybridDisambiguator extends AbstractDisambiguator {
 
       if( inanimVklyReadings.size() > 0 && otherFound ) {
         for(AnalyzedToken analyzedToken: inanimVklyReadings) {
-          tokens[i].removeReading(analyzedToken, this.toString());
+          tokens[i].removeReading(analyzedToken, "inanim_v_kly");
         }
       }
     }
   }
 
+  private static final List<String> LIKELY_V_KLY = Arrays.asList("суде", "роде", "заходе");
   private boolean likelyVklyContext(AnalyzedTokenReadings[] tokens, int i) {
+    if( LIKELY_V_KLY.contains(tokens[i].getToken().toLowerCase()) )
+      return true;
+
     return i < tokens.length - 1
         && ("о".equalsIgnoreCase(tokens[i-1].getToken()) || ! PosTagHelper.hasPosTag(tokens[i-1], PREP_PATTERN))
         && PUNCT_AFTER_KLY_PATTERN.matcher(tokens[i+1].getToken()).matches()
@@ -291,7 +296,7 @@ public class UkrainianHybridDisambiguator extends AbstractDisambiguator {
       }
       if( pluralNameReadings.size() > 0 && otherFound ) {
         for(AnalyzedToken analyzedToken: pluralNameReadings) {
-          tokens[i].removeReading(analyzedToken, this.toString());
+          tokens[i].removeReading(analyzedToken, "plural_for_names");
         }
       }
     }
@@ -336,6 +341,28 @@ public class UkrainianHybridDisambiguator extends AbstractDisambiguator {
     checkForInitialRetag(lastName, initialsIdxs, tokens);
   }
 
+  private void retagUnknownInitials(AnalyzedSentence input) {
+    AnalyzedTokenReadings[] tokens = input.getTokens();
+
+    for (int i = 1; i < tokens.length; i++) {
+      if( tokens[i].getToken().endsWith(".") 
+          && INITIAL_REGEX.matcher(tokens[i].getToken()).matches() ) {
+        
+        if( PosTagHelper.hasPosTagPart(tokens[i], "name") )
+          continue;
+
+        for(AnalyzedToken tokenReading: tokens[i].getReadings()) {
+//          if( ! "noninfl:abbr".equals(tokenReading.getPOSTag()) ) {
+            tokens[i].removeReading(tokenReading, "dis_unknown_initials");
+//          }
+        }
+
+        AnalyzedToken newToken = new AnalyzedToken(tokens[i].getToken(), "noninf:abbr", null);
+        tokens[i].addReading(newToken, "dis_unknown_initials");
+      }
+    }
+  }
+  
   private static void checkForInitialRetag(AnalyzedTokenReadings lastName, List<Integer> initialsIdxs, AnalyzedTokenReadings[] tokens) {
     if( lastName != null
         && (initialsIdxs.size() == 1 || initialsIdxs.size() == 2) ) {

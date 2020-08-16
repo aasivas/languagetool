@@ -127,11 +127,20 @@ public class PatternRuleTest extends AbstractPatternRuleTest {
   }
 
   protected void runGrammarRuleForLanguage(Language lang) throws IOException {
-    if (skipCountryVariant(lang)) {
-      System.out.println("Skipping " + lang + " because there are no specific rules for that variant");
-      return;
+    if (lang.getShortCode().equals("de")) {
+      if (lang.getShortCodeWithCountryAndVariant().equals("de-DE")) {
+        runTestForLanguage(lang);  // tests de-DE-AT/grammar.xml
+        runTestForLanguage(Languages.getLanguageForShortCode("de"));  // tests de/grammar.xml
+      } else {
+        System.out.println("Skipping " + lang + " because only de-DE gets tested for German (assuming there are no de-CH specific rules)");
+      }
+    } else {
+      if (skipCountryVariant(lang)) {
+        System.out.println("Skipping " + lang + " because there are no specific rules for that variant");
+        return;
+      }
+      runTestForLanguage(lang);
     }
-    runTestForLanguage(lang);
   }
 
   private void runGrammarRulesFromXmlTestIgnoringLanguages(Set<Language> ignoredLanguages) throws IOException {
@@ -175,7 +184,10 @@ public class PatternRuleTest extends AbstractPatternRuleTest {
       String ruleFilePath = rulesDir + "/" + grammarFile;
       try (InputStream xmlStream = this.getClass().getResourceAsStream(ruleFilePath)) {
         if (xmlStream == null) {
-          if (!ruleFilePath.equals("/org/languagetool/rules/en/en-US/grammar-l2-de.xml") && !ruleFilePath.equals("/org/languagetool/rules/en/en-US/grammar-l2-fr.xml")) {
+          if (!ruleFilePath.equals("/org/languagetool/rules/en/en-US/grammar-l2-de.xml") &&
+              !ruleFilePath.equals("/org/languagetool/rules/en/en-US/grammar-l2-fr.xml") &&
+              !ruleFilePath.equals("/org/languagetool/rules/de/de-DE/grammar.xml")
+            ) {
             System.out.println("No rule file found at " + ruleFilePath + " in classpath. THIS SHOULD BE FIXED!");
           }
           continue;
@@ -496,21 +508,21 @@ public class PatternRuleTest extends AbstractPatternRuleTest {
       if (expectedNonEmptyCorrection) {
         if (!(rule.getMessage().contains("<suggestion>") || rule.getSuggestionsOutMsg().contains("<suggestion>")) && rule.getFilter() == null) {
           ruleErrors.addError(new PatternRuleTestFailure(rule,
-          "You specified a correction but your message has no suggestions."));
+          "You specified a correction, but your message has no suggestions."));
         }
       }
       List<String> realSuggestions = matches.get(0).getSuggestedReplacements();
       if (realSuggestions.isEmpty()) {
         boolean expectedEmptyCorrection = expectedCorrections.size() == 1 && expectedCorrections.get(0).length() == 0;
         if (!expectedEmptyCorrection) {
-          ruleErrors.addError(new PatternRuleTestFailure(rule, "Incorrect suggestions: "
-            + expectedCorrections + " != " + " <no suggestion> on input: " + sentence));
+          ruleErrors.addError(new PatternRuleTestFailure(rule, "Incorrect suggestions: Expected '"
+            + expectedCorrections + "', got  " + " <no suggestion> on input: '" + sentence + "'"));
         }
       } else {
         if (!expectedCorrections.equals(realSuggestions)) {
           ruleErrors.addError(new PatternRuleTestFailure(rule,
-            "Incorrect suggestions: " + String.join("|", expectedCorrections) + " != "
-              + String.join("|", realSuggestions) + " on input: " + sentence));
+            "Incorrect suggestions: Expected '" + String.join("|", expectedCorrections) + "', got: '"
+              + String.join("|", realSuggestions) + "' on input: '" + sentence + "'"));
         }
       }
     }

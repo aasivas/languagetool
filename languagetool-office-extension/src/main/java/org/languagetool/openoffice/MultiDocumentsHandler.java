@@ -20,19 +20,27 @@ package org.languagetool.openoffice;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.Nullable;
+import org.languagetool.JLanguageTool;
 import org.languagetool.Language;
 import org.languagetool.Languages;
 import org.languagetool.UserConfig;
+import org.languagetool.gui.AboutDialog;
 import org.languagetool.gui.Configuration;
+import org.languagetool.openoffice.SpellAndGrammarCheckDialog.LtCheckDialog;
 import org.languagetool.rules.CategoryId;
 import org.languagetool.rules.Rule;
 import org.languagetool.rules.TextLevelRule;
@@ -41,10 +49,15 @@ import org.languagetool.tools.Tools;
 import com.sun.star.beans.PropertyValue;
 import com.sun.star.beans.XPropertySet;
 import com.sun.star.frame.XModel;
+import com.sun.star.lang.EventObject;
 import com.sun.star.lang.Locale;
 import com.sun.star.lang.XComponent;
 import com.sun.star.lang.XEventListener;
+import com.sun.star.linguistic2.LinguServiceEvent;
+import com.sun.star.linguistic2.LinguServiceEventFlags;
 import com.sun.star.linguistic2.ProofreadingResult;
+import com.sun.star.linguistic2.XLinguServiceEventListener;
+import com.sun.star.linguistic2.XProofreader;
 import com.sun.star.text.XTextViewCursor;
 import com.sun.star.text.XTextViewCursorSupplier;
 import com.sun.star.uno.UnoRuntime;
@@ -57,59 +70,106 @@ import com.sun.star.uno.XComponentContext;
  */
 public class MultiDocumentsHandler {
 
+  private static final String VENDOR_ID = "languagetool.org";
+  private static final String APPLICATION_ID = "LanguageTool";
+  private static final String OFFICE_EXTENSION_ID = "LibreOffice";
+  private static final String CONFIG_FILE = "Languagetool.cfg";
+  private static final String OLD_CONFIG_FILE = ".languagetool-ooo.cfg";
+  private static final String LOG_FILE = "LanguageTool.log";
   // LibreOffice (since 4.2.0) special tag for locale with variant 
   // e.g. language ="qlt" country="ES" variant="ca-ES-valencia":
   private static final String LIBREOFFICE_SPECIAL_LANGUAGE_TAG = "qlt";
   
+  private static final ResourceBundle messages = JLanguageTool.getMessageBundle();
+
+  private final List<XLinguServiceEventListener> xEventListeners;
+
+  private boolean docReset = false;
+
   private static boolean debugMode = false;   //  should be false except for testing
   
   private SwJLanguageTool langTool = null;
   private Language docLanguage = null;
   private Language fixedLanguage = null;
   private Language langForShortName;
-  private final ResourceBundle messages;
+  private Locale locale;
   private final XEventListener xEventListener;
-  private final Main mainThread;
+  private final XProofreader xProofreader;
   private final File configDir;
   private final String configFile;
   private final File oldConfigFile;
   private Configuration config = null;
   private LinguisticServices linguServices = null;
   private SortedTextRules sortedTextRules;
-  private Set<String> disabledRulesUI;      //  Rules disabled by context menu or spell dialog
-  private final List<Rule> extraRemoteRules;      //  store of rules supported by remote server but not locally
-  private LtDictionary dictionary;
+  private Set<String> disabledRulesUI;        //  Rules disabled by context menu or spell dialog
+  private final List<Rule> extraRemoteRules;  //  store of rules supported by remote server but not locally
+  private LtDictionary dictionary;            //  internal dictionary of LT defined words 
+  private LtCheckDialog ltDialog = null;      //  LT spelling and grammar check dialog
   
-  private XComponentContext xContext;       //  The context of the document
-  private List<SingleDocument> documents;   //  The List of LO documents to be checked
-  private XComponent goneContext = null;    //  save component of closed document
-  private boolean recheck = true;
-  private int docNum;                       //  number of the current document
+  private XComponentContext xContext;         //  The context of the document
+  private List<SingleDocument> documents;     //  The List of LO documents to be checked
+  private XComponent goneContext = null;      //  save component of closed document
+  private boolean recheck = true;             //  if true: recheck the whole document at next iteration
+  private int docNum;                         //  number of the current document
 
-  private boolean switchOff = false;        //  is LT switched off
-  private boolean useQueue = true;          //  will be overwritten by config;
+  private boolean switchOff = false;          //  is LT switched off
+  private boolean useQueue = true;            //  will be overwritten by config;
 
-  private String menuDocId = null;          //  Id of document at which context menu was called 
+  private String menuDocId = null;            //  Id of document at which context menu was called 
   private TextLevelCheckQueue textLevelQueue = null; // Queue to check text level rules
   
   private boolean testMode = false;
 
 
-  MultiDocumentsHandler(XComponentContext xContext, File configDir, String configFile, File oldConfigFile,
-      ResourceBundle messages, Main mainThread) {
+  MultiDocumentsHandler(XComponentContext xContext, XProofreader xProofreader, XEventListener xEventListener) {
     this.xContext = xContext;
-    this.configDir = configDir;
-    this.configFile = configFile;
-    this.oldConfigFile = oldConfigFile;
-    this.messages = messages;
-    this.xEventListener = mainThread;
-    this.mainThread = mainThread;
+    this.xEventListener = xEventListener;
+    this.xProofreader = xProofreader;
+    xEventListeners = new ArrayList<>();
+    configFile = CONFIG_FILE;
+    File homeDir = getHomeDir();
+    configDir = getLOConfigDir();
+    String configDirName = configDir == null ? "." : configDir.toString();
+    oldConfigFile = homeDir == null ? null : new File(homeDir, OLD_CONFIG_FILE);
+    MessageHandler.init(configDirName, LOG_FILE);
     documents = new ArrayList<>();
     disabledRulesUI = new HashSet<>();
     extraRemoteRules = new ArrayList<>();
     dictionary = new LtDictionary();
   }
   
+  /**
+   * Runs the grammar checker on paragraph text.
+   *
+   * @param docID document ID
+   * @param paraText paragraph text
+   * @param locale Locale the text Locale
+   * @param startOfSentencePos start of sentence position
+   * @param nSuggestedBehindEndOfSentencePosition end of sentence position
+   * @return ProofreadingResult containing the results of the check.
+   */
+  public final ProofreadingResult doProofreading(String docID,
+      String paraText, Locale locale, int startOfSentencePos,
+      int nSuggestedBehindEndOfSentencePosition,
+      PropertyValue[] propertyValues) {
+    ProofreadingResult paRes = new ProofreadingResult();
+    paRes.nStartOfSentencePosition = startOfSentencePos;
+    paRes.nStartOfNextSentencePosition = nSuggestedBehindEndOfSentencePosition;
+    paRes.nBehindEndOfSentencePosition = paRes.nStartOfNextSentencePosition;
+    paRes.xProofreader = xProofreader;
+    paRes.aLocale = locale;
+    paRes.aDocumentIdentifier = docID;
+    paRes.aText = paraText;
+    paRes.aProperties = propertyValues;
+    try {
+      paRes = getCheckResults(paraText, locale, paRes, propertyValues, docReset);
+      docReset = false;
+    } catch (Throwable t) {
+      MessageHandler.showError(t);
+    }
+    return paRes;
+  }
+
   /**
    * distribute the check request to the concerned document
    */
@@ -126,20 +186,24 @@ public class MultiDocumentsHandler {
         isSameLanguage = langForShortName.equals(docLanguage);
       }
       if (!isSameLanguage || langTool == null || recheck) {
+        boolean initDocs = langTool == null || recheck;
         if (!isSameLanguage) {
           docLanguage = langForShortName;
+          this.locale = locale;
           extraRemoteRules.clear();
         }
         langTool = initLanguageTool();
-        initCheck(langTool);
-        initDocuments(locale);
+        initCheck(langTool, locale);
+        if (initDocs) {
+          initDocuments();
+        }
       }
     }
     docNum = getNumDoc(paRes.aDocumentIdentifier);
     if(switchOff) {
       return paRes;
     }
-    paRes = documents.get(docNum).getCheckResults(paraText, locale, paRes, propertyValues, docReset, langTool);
+    paRes = documents.get(docNum).getCheckResults(paraText, paRes, propertyValues, docReset, langTool);
     if(langTool.doReset()) {
       // langTool.doReset() == true: if server connection is broken ==> switch to internal check
       MessageHandler.showMessage(messages.getString("loRemoteSwitchToLocal"));
@@ -149,16 +213,22 @@ public class MultiDocumentsHandler {
       } catch (IOException e) {
         MessageHandler.showError(e);
       }
-      mainThread.resetDocument();
+      resetDocument();
     }
     return paRes;
   }
 
   /**
-   * reset the Document
+   *  Get the current used document
    */
-  void resetDocument() {
-    mainThread.resetDocument();
+  public SingleDocument getCurrentDocument() {
+    XComponent xComponent = OfficeTools.getCurrentComponent(xContext);
+    for (SingleDocument document : documents) {
+      if(xComponent.equals(document.getXComponent())) {
+        return document;
+      }
+    }
+    return null;
   }
   
   /**
@@ -174,6 +244,13 @@ public class MultiDocumentsHandler {
   void setComponentContext(XComponentContext xContext) {
     this.xContext = xContext;
     setRecheck();
+  }
+  
+  /**
+   *  Set pointer to LT spell and grammar check dialog
+   */
+  public void setLtDialog(LtCheckDialog dialog) {
+    ltDialog = dialog;
   }
   
   /**
@@ -201,6 +278,13 @@ public class MultiDocumentsHandler {
   }
   
   /**
+   *  Remove a rule from disabled rules by spell dialog
+   */
+  void removeDisabledRule(String ruleId) {
+    disabledRulesUI.remove(ruleId);
+  }
+  
+  /**
    *  remove all disabled rules by context menu or spell dialog
    */
   void resetDisabledRules() {
@@ -225,6 +309,12 @@ public class MultiDocumentsHandler {
    *  get LanguageTool
    */
   SwJLanguageTool getLanguageTool() {
+    if (langTool == null) {
+      if (docLanguage == null) {
+        docLanguage = getLanguage();
+      }
+      langTool = initLanguageTool();
+    }
     return langTool;
   }
   
@@ -234,9 +324,6 @@ public class MultiDocumentsHandler {
   Configuration getConfiguration() {
     try {
       if (config == null || recheck) {
-        if(xContext != null) {
-          linguServices = new LinguisticServices(xContext);
-        }
         if(docLanguage == null) {
           docLanguage = getLanguage();
         }
@@ -253,6 +340,7 @@ public class MultiDocumentsHandler {
    */
   void setTestMode(boolean mode) {
     testMode = mode;
+    MessageHandler.setTestMode(mode);
   }
 
   /**
@@ -365,7 +453,7 @@ public class MultiDocumentsHandler {
   /**
    * Get language from locale
    */
-  private Language getLanguage(Locale locale) {
+  public Language getLanguage(Locale locale) {
     try {
       if (locale.Language.equalsIgnoreCase(LIBREOFFICE_SPECIAL_LANGUAGE_TAG)) {
         return Languages.getLanguageForShortCode(locale.Variant);
@@ -488,8 +576,10 @@ public class MultiDocumentsHandler {
   SwJLanguageTool initLanguageTool(Language currentLanguage) {
     SwJLanguageTool langTool = null;
     try {
-      linguServices = new LinguisticServices(xContext);
-      config = new Configuration(configDir, configFile, oldConfigFile, docLanguage, linguServices);
+      config = new Configuration(configDir, configFile, oldConfigFile, docLanguage);
+      if (linguServices == null) {
+        linguServices = new LinguisticServices(xContext, config.noSynonymsAsSuggestions());
+      }
       if (this.langTool == null) {
         OfficeTools.setLogLevel(config.getlogLevel());
         debugMode = OfficeTools.DEBUG_MODE_MD;
@@ -514,21 +604,25 @@ public class MultiDocumentsHandler {
         File ngramLangDir = new File(config.getNgramDirectory(), currentLanguage.getShortCode());
         if (ngramLangDir.exists()) {  // user might have ngram data only for some languages and that's okay
           langTool.activateLanguageModelRules(ngramDirectory);
+          if (debugMode) {
+            MessageHandler.printToLogFile("ngram Model activated for language: " + currentLanguage.getShortCode());
+          }
         }
       }
       File word2VecDirectory = config.getWord2VecDirectory();
       if (word2VecDirectory != null) {
         File word2VecLangDir = new File(config.getWord2VecDirectory(), currentLanguage.getShortCode());
-        if (word2VecLangDir.exists()) {  // user might have ngram data only for some languages and that's okay
+        if (word2VecLangDir.exists()) {  // user might have word2vec data only for some languages and that's okay
           langTool.activateWord2VecModelRules(word2VecDirectory);
         }
       }
       for (Rule rule : langTool.getAllActiveOfficeRules()) {
         if (rule.isDictionaryBasedSpellingRule()) {
           langTool.disableRule(rule.getId());
-        }
-        if (rule.useInOffice()) {
-          langTool.enableRule(rule.getId());
+          if (rule.useInOffice()) {
+            // set default off so it can be re-enabled by user configuration
+            rule.setDefaultOff();
+          }
         }
       }
       recheck = false;
@@ -542,7 +636,7 @@ public class MultiDocumentsHandler {
   /**
    * Enable or disable rules as given by configuration file
    */
-  void initCheck(SwJLanguageTool langTool) {
+  void initCheck(SwJLanguageTool langTool, Locale locale) {
     Set<String> disabledRuleIds = config.getDisabledRuleIds();
     if (disabledRuleIds != null) {
       // copy as the config thread may access this as well
@@ -572,18 +666,26 @@ public class MultiDocumentsHandler {
         langTool.disableRule(id);
       }
     }
+    if (config.useLtDictionary()) {
+      if (dictionary.setLtDictionary(xContext, locale, linguServices)) {
+        resetCheck();
+      }
+    } else {
+      if (dictionary.removeLtDictionaries(xContext)) {
+        resetCheck();
+      }
+    }
   }
   
   /**
    * Initialize single documents, prepare text level rules and start queue
    */
-  void initDocuments(Locale locale) {
+  void initDocuments() {
     setConfigValues(config, langTool);
     sortedTextRules = new SortedTextRules();
     for (SingleDocument document : documents) {
       document.resetCache();
     }
-    dictionary.setLtDictionary(xContext, locale, configDir.getPath());
     if(useQueue) {
       if(textLevelQueue == null) {
         textLevelQueue = new TextLevelCheckQueue(this);
@@ -591,6 +693,20 @@ public class MultiDocumentsHandler {
         textLevelQueue.setReset();
       }
     }
+  }
+
+  /**
+   * Get current locale language
+   */
+  public Locale getLocale() {
+    return locale;
+  }
+  
+  /**
+   * Get dictionary access
+   */
+  public LtDictionary getLtDictionary() {
+    return dictionary;
   }
 
   /**
@@ -623,7 +739,7 @@ public class MultiDocumentsHandler {
       docLanguage = getLanguage();
     }
     if (config == null) {
-      config = new Configuration(configDir, configFile, oldConfigFile, docLanguage, linguServices);
+      config = new Configuration(configDir, configFile, oldConfigFile, docLanguage);
     }
     switchOff = !switchOff;
     if(!switchOff && textLevelQueue != null) {
@@ -672,22 +788,32 @@ public class MultiDocumentsHandler {
   public void deactivateRule() {
     for (SingleDocument document : documents) {
       if(menuDocId.equals(document.getDocID())) {
-        String ruleId = document.deactivateRule();
-        if (ruleId != null) {
-          try {
-            Configuration confg = new Configuration(configDir, configFile, oldConfigFile, docLanguage, linguServices);
-            Set<String> ruleIds = new HashSet<>();
-            ruleIds.add(ruleId);
-            confg.addDisabledRuleIds(ruleIds);
-            confg.saveConfiguration(docLanguage);
-          } catch (IOException e) {
-            MessageHandler.printException(e);
-          }
+        deactivateRule(document.deactivateRule(), false);
+        break;
+      }
+    }
+  }
+  
+  /**
+   * Deactivate a rule by rule iD
+   */
+  public void deactivateRule(String ruleId, boolean reactivate) {
+    if (ruleId != null) {
+      try {
+        Configuration confg = new Configuration(configDir, configFile, oldConfigFile, docLanguage);
+        Set<String> ruleIds = new HashSet<>();
+        ruleIds.add(ruleId);
+        if (reactivate) {
+          confg.removeDisabledRuleIds(ruleIds);
+        } else {
+          confg.addDisabledRuleIds(ruleIds);
         }
+        confg.saveConfiguration(docLanguage);
         if (debugMode) {
           MessageHandler.printToLogFile("Rule Disabled: " + (ruleId == null ? "null" : ruleId));
         }
-        break;
+      } catch (IOException e) {
+        MessageHandler.printException(e);
       }
     }
   }
@@ -812,5 +938,345 @@ public class MultiDocumentsHandler {
 
   }
   
+  /**
+   * We leave spell checking to OpenOffice/LibreOffice.
+   * @return false
+   */
+  public final boolean isSpellChecker() {
+    return false;
+  }
+  
+  /**
+   * Returns xContext
+   */
+  public XComponentContext getContext() {
+    return xContext;
+  }
+
+  /**
+   * Runs LT options dialog box.
+   */
+  public void runOptionsDialog() {
+    Configuration config = getConfiguration();
+    Language lang = config.getDefaultLanguage();
+    if (lang == null) {
+      lang = getLanguage();
+    }
+    if (lang == null) {
+      return;
+    }
+    ConfigThread configThread = new ConfigThread(lang, config, this);
+    configThread.start();
+  }
+
+  /**
+   * @return An array of Locales supported by LT
+   */
+  public final Locale[] getLocales() {
+    try {
+      List<Locale> locales = new ArrayList<>();
+      for (Language lang : Languages.get()) {
+        if (lang.getCountries().length == 0) {
+          // e.g. Esperanto
+          if (lang.getVariant() != null) {
+            locales.add(new Locale(LIBREOFFICE_SPECIAL_LANGUAGE_TAG, "", lang.getShortCodeWithCountryAndVariant()));
+          } else {
+            locales.add(new Locale(lang.getShortCode(), "", ""));
+          }
+        } else {
+          for (String country : lang.getCountries()) {
+            if (lang.getVariant() != null) {
+              locales.add(new Locale(LIBREOFFICE_SPECIAL_LANGUAGE_TAG, country, lang.getShortCodeWithCountryAndVariant()));
+            } else {
+              locales.add(new Locale(lang.getShortCode(), country, ""));
+            }
+          }
+        }
+      }
+      return locales.toArray(new Locale[0]);
+    } catch (Throwable t) {
+      MessageHandler.showError(t);
+      return new Locale[0];
+    }
+  }
+
+  /**
+   * Add a listener that allow re-checking the document after changing the
+   * options in the configuration dialog box.
+   * 
+   * @param eventListener the listener to be added
+   * @return true if listener is non-null and has been added, false otherwise
+   */
+  public final boolean addLinguServiceEventListener(XLinguServiceEventListener eventListener) {
+    if (eventListener == null) {
+      return false;
+    }
+    xEventListeners.add(eventListener);
+    return true;
+  }
+
+  /**
+   * Remove a listener from the event listeners list.
+   * 
+   * @param eventListener the listener to be removed
+   * @return true if listener is non-null and has been removed, false otherwise
+   */
+  public final boolean removeLinguServiceEventListener(XLinguServiceEventListener eventListener) {
+    if (eventListener == null) {
+      return false;
+    }
+    if (xEventListeners.contains(eventListener)) {
+      xEventListeners.remove(eventListener);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Inform listener that the doc should be rechecked.
+   */
+  public boolean resetCheck() {
+    return resetCheck(LinguServiceEventFlags.PROOFREAD_AGAIN);
+  }
+
+  public boolean resetCheck(short eventFlag) {
+    if (!xEventListeners.isEmpty()) {
+      for (XLinguServiceEventListener xEvLis : xEventListeners) {
+        if (xEvLis != null) {
+          LinguServiceEvent xEvent = new LinguServiceEvent();
+          xEvent.nEvent = eventFlag;
+          xEvLis.processLinguServiceEvent(xEvent);
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Configuration has be changed
+   */
+  void resetConfiguration() {
+    linguServices = null;
+    resetDocument();
+  }
+
+  /**
+   * Inform listener (grammar checking iterator) that options have changed and
+   * the doc should be rechecked.
+   */
+  void resetDocument() {
+    setRecheck();
+    resetCheck();
+  }
+
+  public void trigger(String sEvent) {
+    try {
+      if ("configure".equals(sEvent)) {
+        runOptionsDialog();
+      } else if ("about".equals(sEvent)) {
+        AboutDialogThread aboutThread = new AboutDialogThread(messages);
+        aboutThread.start();
+      } else if ("switchOff".equals(sEvent)) {
+        if(toggleSwitchedOff()) {
+          resetCheck(); 
+        }
+      } else if ("ignoreOnce".equals(sEvent)) {
+        ignoreOnce();
+      } else if ("deactivateRule".equals(sEvent)) {
+        deactivateRule();
+        resetDocument();
+      } else if ("checkDialog".equals(sEvent)) {
+//        if (OfficeTools.DEVELOP_MODE) {
+          if (ltDialog != null) {
+            ltDialog.closeDialog();
+          }
+          SpellAndGrammarCheckDialog checkDialog = new SpellAndGrammarCheckDialog(xContext, this, docLanguage);
+          MessageHandler.printToLogFile("Start Spell And Grammar Check Dialog");
+          checkDialog.start();
+//        }
+      } else if ("nextError".equals(sEvent)) {
+        SpellAndGrammarCheckDialog checkDialog = new SpellAndGrammarCheckDialog(xContext, this, docLanguage);
+        checkDialog.nextError();
+      } else if ("remoteHint".equals(sEvent)) {
+        if(getConfiguration().useOtherServer()) {
+          MessageHandler.showMessage(MessageFormat.format(messages.getString("loRemoteInfoOtherServer"), 
+              getConfiguration().getServerUrl()));
+        } else {
+          MessageHandler.showMessage(messages.getString("loRemoteInfoDefaultServer"));
+        }
+      } else {
+        MessageHandler.printToLogFile("Sorry, don't know what to do, sEvent = " + sEvent);
+      }
+    } catch (Throwable e) {
+      MessageHandler.showError(e);
+    }
+  }
+
+  public boolean javaVersionOkay() {
+    String version = System.getProperty("java.version");
+    if (version != null
+        && (version.startsWith("1.0") || version.startsWith("1.1")
+            || version.startsWith("1.2") || version.startsWith("1.3")
+            || version.startsWith("1.4") || version.startsWith("1.5")
+            || version.startsWith("1.6") || version.startsWith("1.7"))) {
+      MessageHandler.showMessage("Error: LanguageTool requires Java 8 or later. Current version: " + version);
+      return false;
+    }
+    try {
+      // do not set look and feel for on Mac OS X as it causes the following error:
+      // soffice[2149:2703] Apple AWT Java VM was loaded on first thread -- can't start AWT.
+      if (!System.getProperty("os.name").contains("OS X")) {
+         // Cross-Platform Look And Feel @since 3.7
+         if (System.getProperty("os.name").contains("Linux")) {
+           UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+         }
+         else {
+           UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+         }
+      }
+    } catch (Exception ignored) {
+      // Well, what can we do...
+    }
+    return true;
+  }
+
+  private File getHomeDir() {
+    String homeDir = System.getProperty("user.home");
+    if (homeDir == null) {
+      MessageHandler.showError(new RuntimeException("Could not get home directory"));
+      return null;
+    }
+    return new File(homeDir);
+  }
+
+  /**
+   * Returns directory to store every information for LT office extension
+   * @since 4.7
+   */
+  private File getLOConfigDir() {
+      String userHome = null;
+      File directory;
+      try {
+        userHome = System.getProperty("user.home");
+      } catch (SecurityException ex) {
+      }
+      if (userHome == null) {
+        MessageHandler.showError(new RuntimeException("Could not get home directory"));
+        directory = null;
+      } else if (SystemUtils.IS_OS_WINDOWS) {
+        // Path: \\user\<YourUserName>\AppData\Roaming\languagetool.org\LanguageTool\LibreOffice  
+        File appDataDir = null;
+        try {
+          String appData = System.getenv("APPDATA");
+          if (!StringUtils.isEmpty(appData)) {
+            appDataDir = new File(appData);
+          }
+        } catch (SecurityException ex) {
+        }
+        if (appDataDir != null && appDataDir.isDirectory()) {
+          String path = VENDOR_ID + "\\" + APPLICATION_ID + "\\" + OFFICE_EXTENSION_ID + "\\";
+          directory = new File(appDataDir, path);
+        } else {
+          String path = "Application Data\\" + VENDOR_ID + "\\" + APPLICATION_ID + "\\" + OFFICE_EXTENSION_ID + "\\";
+          directory = new File(userHome, path);
+        }
+      } else if (SystemUtils.IS_OS_LINUX) {
+        // Path: /home/<YourUserName>/.config/LanguageTool/LibreOffice  
+        File appDataDir = null;
+        try {
+          String xdgConfigHome = System.getenv("XDG_CONFIG_HOME");
+          if (!StringUtils.isEmpty(xdgConfigHome)) {
+            appDataDir = new File(xdgConfigHome);
+            if (!appDataDir.isAbsolute()) {
+              //https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+              //All paths set in these environment variables must be absolute.
+              //If an implementation encounters a relative path in any of these
+              //variables it should consider the path invalid and ignore it.
+              appDataDir = null;
+            }
+          }
+        } catch (SecurityException ex) {
+        }
+        if (appDataDir != null && appDataDir.isDirectory()) {
+          String path = APPLICATION_ID + "/" + OFFICE_EXTENSION_ID + "/";
+          directory = new File(appDataDir, path);
+        } else {
+          String path = ".config/" + APPLICATION_ID + "/" + OFFICE_EXTENSION_ID + "/";
+          directory = new File(userHome, path);
+        }
+      } else if (SystemUtils.IS_OS_MAC_OSX) {
+        String path = "Library/Application Support/" + APPLICATION_ID + "/" + OFFICE_EXTENSION_ID + "/";
+        directory = new File(userHome, path);
+      } else {
+        String path = "." + APPLICATION_ID + "/" + OFFICE_EXTENSION_ID + "/";
+        directory = new File(userHome, path);
+      }
+      if (directory != null && !directory.exists()) {
+        directory.mkdirs();
+      }
+      return directory;
+  }
+
+
+  private static class AboutDialogThread extends Thread {
+
+    private final ResourceBundle messages;
+
+    AboutDialogThread(ResourceBundle messages) {
+      this.messages = messages;
+    }
+
+    @Override
+    public void run() {
+      // Note: null can cause the dialog to appear on the wrong screen in a
+      // multi-monitor setup, but we just don't have a proper java.awt.Component
+      // here which we could use instead:
+      AboutDialog about = new AboutDialog(messages, null);
+      about.show();
+    }
+  }
+
+  /**
+   * Called when "Ignore" is selected e.g. in the context menu for an error.
+   */
+  public void ignoreRule(String ruleId, Locale locale) {
+    /* TODO: config should be locale-dependent */
+    addDisabledRule(ruleId);
+    setRecheck();
+  }
+
+  /**
+   * Called on rechecking the document - resets the ignore status for rules that
+   * was set in the spelling dialog box or in the context menu.
+   * 
+   * The rules disabled in the config dialog box are left as intact.
+   */
+  public void resetIgnoreRules() {
+    resetDisabledRules();
+    setRecheck();
+    resetIgnoreOnce();
+    docReset = true;
+  }
+
+  public String getServiceDisplayName(Locale locale) {
+    return "LanguageTool";
+  }
+
+  /**
+   * remove internal stored text if document disposes
+   */
+  public void disposing(EventObject source) {
+    //  the data of document will be removed by next call of getNumDocID
+    //  to finish checking thread without crashing
+    XComponent goneContext = UnoRuntime.queryInterface(XComponent.class, source.Source);
+    if(goneContext == null) {
+      MessageHandler.printToLogFile("xComponent of closed document is null");
+    } else {
+      setContextOfClosedDoc(goneContext);
+//      documents.removeMenuListener(goneContext);
+    }
+    goneContext.removeEventListener(xEventListener); 
+  }
   
 }

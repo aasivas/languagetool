@@ -40,10 +40,9 @@ import org.languagetool.rules.ca.CatalanUnpairedQuestionMarksRule;
 import org.languagetool.rules.ca.CatalanWordRepeatRule;
 import org.languagetool.rules.ca.CatalanWrongWordInContextDiacriticsRule;
 import org.languagetool.rules.ca.CatalanWrongWordInContextRule;
-import org.languagetool.rules.ca.ComplexAdjectiveConcordanceRule;
+import org.languagetool.rules.ca.PostponedAdjectiveConcordanceRule;
 import org.languagetool.rules.ca.MorfologikCatalanSpellerRule;
 import org.languagetool.rules.ca.PronomFebleDuplicateRule;
-import org.languagetool.rules.ca.ReflexiveVerbsRule;
 import org.languagetool.rules.ca.ReplaceOperationNamesRule;
 import org.languagetool.rules.ca.SimpleReplaceAnglicism;
 import org.languagetool.rules.ca.SimpleReplaceBalearicRule;
@@ -91,10 +90,9 @@ public class ValencianCatalan extends Catalan {
             new CatalanUnpairedQuestionMarksRule(messages, this),
             new CatalanUnpairedExclamationMarksRule(messages, this),
             new AccentuationCheckRule(messages),
-            new ComplexAdjectiveConcordanceRule(messages),
+            new PostponedAdjectiveConcordanceRule(messages),
             new CatalanWrongWordInContextRule(messages),
             new CatalanWrongWordInContextDiacriticsRule(messages),
-            new ReflexiveVerbsRule(messages),
             new SimpleReplaceVerbsRule(messages, this),
             new SimpleReplaceBalearicRule(messages),
             new SimpleReplaceRule(messages),

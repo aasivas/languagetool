@@ -1,13 +1,37 @@
 # LanguageTool Change Log
 
-## 5.0-SNAPSHOT (release planned for 2020-06-26)
+## 5.1-SNAPSHOT (release planned for 2020-09-25)
 
+#### German
+  * Updated the German part-of-speech dictionary (https://github.com/languagetool-org/german-pos-dict)
+    to version 1.2.2.
+  * Each pair of `ProhibitedCompoundRule` has its own ID now, so it can be separately turned on/off
+
+#### Russian
+  * added and improved rules
+
+#### General
+  * Each pair of `ConfusionProbabilityRule` has its own ID now, so it can be separately turned on/off
+
+
+## 5.0 (2020-06-27)
+
+#### Arabic
+  * added and improved rules
+  * updated POS dictionary (Arramooz [#e33794e](https://github.com/linuxscout/arramooz/commit/e33794e787d56e7c185c0e281fd8e6d6274f3fdc))
+  * remove the Algerian variant (ar-DZ)
+  * add support of ngram data ([languagetool-tools-ar](https://github.com/sohaibafifi/languagetool-tools-ar))
+  * add Darja, Diacritics, Redundancy, WrongWordInContext, Wordiness, Homophones and WordCoherency rules.
+  
 #### Catalan
   * added and improved rules
-  * updated dictionary (catalan-pos-dict-2.8), now with a specific dictionary file for spelling suggestions
+  * updated dictionary (catalan-pos-dict-2.10)
+
+#### Dutch
+  * added and improved rules
 
 #### English
-  * updated en_GB spellchecker dictionary from https://github.com/marcoagpinto/aoo-mozilla-en-dict (Version 2.83 - 2020-04-01)
+  * updated en_GB spellchecker dictionary from https://github.com/marcoagpinto/aoo-mozilla-en-dict (Version 2.85 - 2020-06-01)
 
 #### Esperanto
   * added and improved rules
@@ -15,21 +39,55 @@
 #### French
   * added and improved rules
 
+#### German
+  * added and improved rules
+  * rules that apply to de-DE and de-AT (but not de-CH) can now be placed in `de/de-DE-AT/grammar.xml`
+  * Updated the German part-of-speech dictionary (https://github.com/languagetool-org/german-pos-dict)
+    to version 1.2.1.
+  * Special chars `_` and `/` can now be escaped in `spelling.txt` and `spelling_custom.txt` using
+    the backslash. For example, `foo\/s` will add `foo/s` to the dictionary.
+
+#### Persian
+  * commented out rules that caused many false alarms
+
+#### Portuguese
+  * added and improved rules
+  * added words and POS data
+  * fixed tons of false positives
+
 #### Russian
   * added and improved rules
   * added new Java rules
-  * rebuilded and improved main spellchecker dictionary
-  * new variant (only yo "ё") spellchecker dictionary and new java rule for it
+  * rebuilt and improved main spellchecker dictionary, added many new words
+  * new variant (only yo "ё") spellchecker dictionary and new java rule for it (set off by default)
+  * new `filter` arguments: `prefix` and `suffix` to be used for matching the part-of-speech of parts of words 
+    with prefix and suffix added to original token, e.g.:
+```xml
+       <filter class="org.languagetool.rules.ru.RussianPartialPosTagFilter" 
+                args="no:2 regexp:(.*) postag_regexp:(ADV) prefix:не suffix:  "/>  
+```
 
-
+#### Slovak
+  * commented out rules that caused many false alarms
+  
 #### Spanish
   * added and improved rules
   * new tagger dictionary by Jaume Ortolà, LGPL, source: https://github.com/jaumeortola/spanish-dict-tools
+  * the spelling rule is enabled in LibreOffice using the tagger dictionary (no other spelling dictionary is needed) 
+
+#### Ukrainian
+  * dictionary update, including many rare and slang words
+  * new rules
+  * tokenization and tagging improvements
+  * disambiguation improvements
 
 #### General
   * added `replace_custom.txt` for several languages so users can have their own very simple replace
     rules without worrying about updates (they still need to copy the file to the new LT version, though).
-
+  * Updated dependency `com.gitlab.dumonts:hunspell` to 1.1.1 to make spell checking work on older Linux 
+    distributions like RHEL 7.
+  
+  
 
 ## 4.9 (2020-03-24)
 

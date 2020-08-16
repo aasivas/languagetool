@@ -35,6 +35,7 @@ public class EnglishConfusionProbabilityRule extends ConfusionProbabilityRule {
   private static final List<String> EXCEPTIONS = Arrays.asList(
       // Use all-lowercase, matches will be case-insensitive.
       // See https://github.com/languagetool-org/languagetool/issues/1678
+      "your (",   // ... so your (English) signature gets ...
       "your slack profile",
       "host to five",   // "... is host to five classical music orchestras"
       "had I known",
@@ -124,10 +125,16 @@ public class EnglishConfusionProbabilityRule extends ConfusionProbabilityRule {
       "1 thing",
       "way easier",
       "way faster",
+      "way harder",
       "way quicker",
       "way more",
       "way less",
       "way outside",
+      "way before",
+      "way smaller",
+      "way bigger",
+      "way longer",
+      "way shorter",
       "I now don't",
       "once your return is",
       "can we text",
@@ -150,7 +157,7 @@ public class EnglishConfusionProbabilityRule extends ConfusionProbabilityRule {
       "on twitter", // vs in
       "enjoy us being", // vs is
       "If your use of", // vs you
-      "way too much", // vs was
+      "way too", // vs was
       "then,", // vs than
       "then?", // vs than
       "no it doesn", // vs know
@@ -180,6 +187,33 @@ public class EnglishConfusionProbabilityRule extends ConfusionProbabilityRule {
       "no you wouldn",
       "no you couldn",
       "no you shouldn",
+      "no they were not",
+      "no there was no",
+      "no there was not",
+      "no there wasn",
+      "no there is no",
+      "no there is not",
+      "no there's no",
+      "no there's not",
+      "no there isn",
+      "no there are no",
+      "no there are not",
+      "no there're no",
+      "no there're not",
+      "no there aren",
+      "no there were no",
+      "no there were not",
+      "no there weren",
+      "no this is not",
+      "no that is not",
+      "no we were not",
+      "no we're not",
+      "no they're not",
+      "no all good",
+      "no everything alright",
+      "no everything good",
+      "no everything fine",
+      "no we don't",
       "for your recharge", // vs you
       "all you kids", // vs your
       "thanks for the patience", // vs patients
@@ -217,13 +251,90 @@ public class EnglishConfusionProbabilityRule extends ConfusionProbabilityRule {
       "your set up was",
       "because your pay is",
       "but your pay is",
+      "the while block", // dev speech
+      "updated my edge", // vs by
       "he haven", // vs the
+      "is he naked", // vs the
+      "these news sound", // vs new
+      "those news sound", // vs new
       "(t)he", // vs the
       "[t]he", // vs the
+      "the role at", // vs add
       "same false alarm", // vs some
       "why is he relevant", // vs the
+      "why is he famous", // vs the
       "then that would", // vs than
-      "was he part of" // vs the
+      "was he part of", // vs the
+      "is he right now", // vs the
+      "news page", // vs new
+      "news pages",
+      "news headline",
+      "news headlines",
+      "news title",
+      "news titles",
+      "news article",
+      "news articles",
+      "news site",
+      "news sites",
+      "news website",
+      "news websites",
+      "news channel",
+      "news channels",
+      "news organization",
+      "news organizations",
+      "news organisation",
+      "news organisations",
+      "scene in a movie",
+      "mr.bean", // vs been
+      "mr. bean", // vs been
+      "your push notification", // vs you
+      "check our page about",
+      "have a think", // vs thing (see https://www.lexico.com/definition/think)
+      "had a think",
+      "live support", // vs life
+      "your troll", // vs you
+      "waist type", // vs waste
+      "(wait)",
+      "now ahead of schedule", // vs know
+      "tag us in", // vs is
+      "your rebuild", // vs you
+      "got to know new", // vs now
+      "to live post", // vs life
+      "sea pineapple", // vs see
+      "the commit", // vs to
+      "appreciate you contacting me",
+      "appreciate you contacting us",
+      "appreciate you informing me",
+      "appreciate you informing us",
+      "appreciate you confirming it",
+      "appreciate you confirming this",
+      "appreciate you confirming that",
+      "appreciate you choosing us",
+      "appreciate you choosing me",
+      "wand wood", // vs want
+      "my order", // vs by
+      "of you being her", // vs your
+      "ad free",
+      "ad rates",
+      "your call is", // vs you
+      "on his butt",
+      "message us today",
+      "sent you the invite",
+      "appreciate you fowarding",
+      "appreciate you cooking",
+      "appreciate you sending",
+      "appreciate you talking",
+      "appreciate you taking",
+      "that now means",
+      "fiscal school", // vs physical
+      "covid-19 cases", // vs causes
+      "corona cases", // vs causes
+      "your need can", // vs you
+      "know the customer", // vs now
+      "know what type", // vs now
+      "your pulled pork", // vs you
+      "dear management", // vs deer
+      "the go to" // vs to (caught by GO_TO_HYPHEN)
     );
     
   public EnglishConfusionProbabilityRule(ResourceBundle messages, LanguageModel languageModel, Language language) {
@@ -232,8 +343,8 @@ public class EnglishConfusionProbabilityRule extends ConfusionProbabilityRule {
 
   public EnglishConfusionProbabilityRule(ResourceBundle messages, LanguageModel languageModel, Language language, int grams) {
     super(messages, languageModel, language, grams, EXCEPTIONS);
-    addExamplePair(Example.wrong("I did not <marker>now</marker> where it came from."),
-                   Example.fixed("I did not <marker>know</marker> where it came from."));
+    addExamplePair(Example.wrong("Don't forget to put on the <marker>breaks</marker>."),
+                   Example.fixed("Don't forget to put on the <marker>brakes</marker>."));
   }
 
   @Override

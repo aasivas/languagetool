@@ -83,12 +83,12 @@ public class UkrainianDisambiguationRuleTest {
   public void testDisambiguatorRemoveVmis() throws IOException {
     TestTools.myAssert("У Зв'язку",
         "/[null]SENT_START У/[у]prep  /[null]null "
-        + "Зв'язку/[зв'язка]noun:inanim:f:v_zna|Зв'язку/[зв'язкий]adj:f:v_zna|Зв'язку/[зв'язок]noun:inanim:m:v_dav|Зв'язку/[зв'язок]noun:inanim:m:v_mis|Зв'язку/[зв'язок]noun:inanim:m:v_rod",
+        + "Зв'язку/[зв'язка]noun:inanim:f:v_zna|Зв'язку/[зв'язок]noun:inanim:m:v_dav|Зв'язку/[зв'язок]noun:inanim:m:v_mis|Зв'язку/[зв'язок]noun:inanim:m:v_rod",
         tokenizer, sentenceTokenizer, tagger, disambiguator);
 
     TestTools.myAssert("Зв'язку",
         "/[null]SENT_START "
-        + "Зв'язку/[зв'язка]noun:inanim:f:v_zna|Зв'язку/[зв'язкий]adj:f:v_zna|Зв'язку/[зв'язок]noun:inanim:m:v_dav|Зв'язку/[зв'язок]noun:inanim:m:v_rod",
+        + "Зв'язку/[зв'язка]noun:inanim:f:v_zna|Зв'язку/[зв'язок]noun:inanim:m:v_dav|Зв'язку/[зв'язок]noun:inanim:m:v_rod",
         tokenizer, sentenceTokenizer, tagger, disambiguator);
 
     TestTools.myAssert("нейтралітеті",
@@ -303,13 +303,24 @@ public class UkrainianDisambiguationRuleTest {
       +" преподобний/[преподобний]adj:m:v_kly|преподобний/[преподобний]adj:m:v_naz|преподобний/[преподобний]adj:m:v_zna:rinanim"
       +"|преподобний/[преподобний]noun:anim:m:v_kly|преподобний/[преподобний]noun:anim:m:v_naz"
       +"  /[null]null"
-      +" С./[null]null"
+      +" С./[null]noninf:abbr"
       +"  /[null]null"
-      +" С./[null]null"
+      +" С./[null]noninf:abbr"
       +"  /[null]null"
       +" Мокітімі/[null]null ,/[null]null  /[null]null"
       +" був/[бути]verb:imperf:past:m  /[null]null чудовою/[чудовий]adj:f:v_oru:compb  /[null]null людиною/[людина]noun:anim:f:v_oru ./[null]null",
         tokenizer, sentenceTokenizer, tagger, disambiguator);
+    
+    TestTools.myAssert("Є. Тахкк",
+        "/[null]SENT_START"
+          + " Є./[null]noninf:abbr  /[null]null Тахкк/[null]null",
+        tokenizer, sentenceTokenizer, tagger, disambiguator);
+    
+    TestTools.myAssert("В. Іпа",
+        "/[null]SENT_START"
+          + " В./[null]noninf:abbr  /[null]null Іпа/[null]null",
+        tokenizer, sentenceTokenizer, tagger, disambiguator);
+
   }
 
   @Test

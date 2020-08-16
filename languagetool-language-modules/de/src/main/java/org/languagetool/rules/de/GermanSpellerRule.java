@@ -41,8 +41,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -72,6 +70,8 @@ public class GermanSpellerRule extends CompoundAwareHunspellRule {
     put("inbetracht", "in Betracht");
     put("einlogen", "einloggen");
     put("Kruks", "Krux");
+    put("Filterbubble", "Filterblase");
+    put("Filterbubbles", "Filterblasen");
     putRepl("wiedersteh(en|st|t)", "wieder", "wider");
     putRepl("wiederstan(d|den|dest)", "wieder", "wider");
     putRepl("wiedersprech(e|t|en)?", "wieder", "wider");
@@ -83,6 +83,14 @@ public class GermanSpellerRule extends CompoundAwareHunspellRule {
     putRepl("wiederhall(e|st|t|en|te|ten)?", "wieder", "wider");
     putRepl("wiedersetz(e|t|en|te|ten)?", "wieder", "wider");
     putRepl("wiederstreb(e|st|t|en|te|ten)?", "wieder", "wider");
+    put("gesynct", "synchronisiert");
+    put("gesynced", "synchronisiert");
+    put("gesyncht", "synchronisiert");
+    put("gesyngt", "synchronisiert");
+    put("synce", "synchronisiere");
+    put("synche", "synchronisiere");
+    put("syncen", "synchronisieren");
+    put("synchen", "synchronisieren");
     put("wiederspiegelten", "widerspiegelten");
     put("wiedererwarten", "wider Erwarten");
     put("widerholen", "wiederholen");
@@ -133,10 +141,15 @@ public class GermanSpellerRule extends CompoundAwareHunspellRule {
     put("nacher", "nachher");
     put("jeztz", "jetzt");
     put("les", "lese");
+    put("wr", "wir");
+    put("bezweifel", "bezweifle");
+    put("verzweifel", "verzweifle");
+    put("zweifel", "zweifle");
     put("[wW]ah?rscheindlichkeit", "Wahrscheinlichkeit");
     put("Hijab", "Hidschāb");
     put("[lL]eerequiment", "Leerequipment");
     put("unauslässlich", w -> Arrays.asList("unerlässlich", "unablässig", "unauslöschlich"));
+    putRepl("[Ww]i", "i", "ie");
     putRepl("[uU]nauslässlich(e[mnrs]?)?", "aus", "er");
     putRepl("[vV]erewiglicht(e[mnrs]?)?", "lich", "");
     putRepl("[zZ]eritifiert(e[mnrs]?)?", "eritifiert", "ertifiziert");
@@ -150,6 +163,7 @@ public class GermanSpellerRule extends CompoundAwareHunspellRule {
     putRepl("Germanistikerin(nen)?", "Germanistiker", "Germanist");
     putRepl("[iI]ns?z[ie]nie?rung(en)?", "[iI]ns?z[ie]nie?", "Inszenie");
     putRepl("[eE]rhöherung(en)?", "[eE]rhöherung", "Erhöhung");
+    putRepl("[vV]erspäterung(en)?", "später", "spät");
     putRepl("[vV]orallendingen", "orallendingen", "or allen Dingen");
     putRepl("[aA]ufjede[nm]fall", "jede[nm]fall$", " jeden Fall");
     putRepl("[aA]us[vf]ersehen[dt]lich", "[vf]ersehen[dt]lich", " Versehen");
@@ -186,6 +200,7 @@ public class GermanSpellerRule extends CompoundAwareHunspellRule {
     putRepl("entf[ai]ngen?", "ent", "emp");
     putRepl("entf[äi]ngs?t", "ent", "emp");
     putRepl("[Bb]ehilfreich(e[rnms]?)", "reich", "lich");
+    putRepl("[Bb]zgl", "zgl", "zgl.");
     put("check", "checke");
     put("Rückrad", "Rückgrat");
     put("ala", "à la");
@@ -887,11 +902,60 @@ public class GermanSpellerRule extends CompoundAwareHunspellRule {
     putRepl("voluptös(e|ere|este)?[mnrs]?$", "tös", "tuös");
     putRepl("[pP]flanzig(e[mnrs]?)?", "ig", "lich");
     putRepl("geblogt(e[mnrs]?)?$", "gt", "ggt");
+    putRepl("herraus.*", "herraus", "heraus");
+    putRepl("[aA]bbonier(en?|s?t|te[mnrst]?)", "bbo", "bon");
+    putRepl("[aA]pelier(en?|s?t|te[nt]?)", "pel", "ppell");
+    putRepl("[vV]oltie?schier(en?|s?t|te[nt]?)", "ie?sch", "ig");
+    putRepl("[mM]eistverkaufteste[mnrs]?", "teste", "te");
+    putRepl("[uU]nleshaft(e[mnrs]?)?", "haft", "erlich");
+    putRepl("[gG]laubenswürdig(e[mnrs]?)?", "ens", "");
+    putRepl("[nN]i[vw]ovoll(e[mnrs]?)?", "[vw]ovoll", "veauvoll");
+    putRepl("[nN]otgezwungend?(e[mnrs]?)?", "zwungend?", "drungen");
+    putRepl("[mM]isstraurig(e[mnrs]?)?", "rig", "isch");
+    putRepl("[iI]nflagrantie?", "flagrantie?", " flagranti");
+    putRepl("Aux-Anschl(uss(es)?|üssen?)", "Aux", "AUX");
+    putRepl("desinfektiert(e[mnrs]?)?", "fekt", "fiz");
+    putRepl("desinfektierend(e[mnrs]?)?", "fekt", "fiz");
+    putRepl("desinfektieren?", "fekt", "fiz");
+    putRepl("ausbüchsen?", "chs", "x");
+    putRepl("aus(ge)?büchst(en?)?", "chs", "x");
+    putRepl("innoff?iziell?(e[mnrs]?)?", "innoff?iziell?", "inoffiziell");
+    putRepl("[gG]roesste[mnrs]?", "oess", "öß");
+    putRepl("[tT]efonisch(e[mnrs]?)?", "efon", "elefon");
+    putRepl("[oO]ptimalisiert", "alis", "");
+    putRepl("[iI]ntrovertisch(e[mnrs]?)?", "isch", "iert");
+    put("Permanent-Make-Up", "Permanent-Make-up");
+    put("woltet", "wolltet");
+    put("Bäckei", "Bäckerei");
+    put("Bäckeien", "Bäckereien");
+    put("warmweis", "warmweiß");
+    put("kaltweis", "kaltweiß");
+    put("jez", "jetzt");
+    put("hendis", "Handys");
+    put("wie?derwarten", "wider Erwarten");
+    put("[eE]ntercott?e", "Entrecôte");
+    put("[eE]rwachtung", "Erwartung");
+    put("[aA]nung", "Ahnung");
+    put("[uU]nreimlichkeiten", "Ungereimtheiten");
+    put("[uU]nangeneh?mlichkeiten", "Unannehmlichkeiten");
+    put("Messy", "Messie");
+    put("Polover", "Pullover");
+    put("heilwegs", "halbwegs");
+    put("undsoweiter", "und so weiter");
+    put("Gladbeckerstrasse", "Gladbecker Straße");
+    put("[bB]range", "Branche");
+    put("Gewebtrauma", "Gewebetrauma");
+    put("aufgehangen", "aufgehängt");
+    put("Ehrenamtpauschale", "Ehrenamtspauschale");
+    put("[gG]eborgsamkeit", "Geborgenheit");
+    put("gekommt", "gekommen");
     put("hinweißen", "hinweisen");
+    put("Importation", "Import");
+    put("lädest", "lädst");
+    put("Themabereich", "Themenbereich");
+    put("Werksresett", "Werksreset");
     put("wiederfahren", "widerfahren");
     put("wiederspiegelten", "widerspiegelten");
-    putRepl("herraus.*", "herraus", "heraus");
-    put("aufgehangen", "aufgehängt");
   }
 
   private static void putRepl(String wordPattern, String pattern, String replacement) {
@@ -920,11 +984,9 @@ public class GermanSpellerRule extends CompoundAwareHunspellRule {
   private final Synthesizer synthesizer;
   private final Tagger tagger;
 
-
   public GermanSpellerRule(ResourceBundle messages, German language) {
     this(messages, language, null, null);
   }
-
 
   /**
    * @since 4.2
@@ -938,7 +1000,6 @@ public class GermanSpellerRule extends CompoundAwareHunspellRule {
    */
   public GermanSpellerRule(ResourceBundle messages, German language, UserConfig userConfig, String languageVariantPlainTextDict, List<Language> altLanguages, LanguageModel languageModel) {
     super(messages, language, language.getNonStrictCompoundSplitter(), getSpeller(language, userConfig, languageVariantPlainTextDict), userConfig, altLanguages, languageModel);
-
     addExamplePair(Example.wrong("LanguageTool kann mehr als eine <marker>nromale</marker> Rechtschreibprüfung."),
                    Example.fixed("LanguageTool kann mehr als eine <marker>normale</marker> Rechtschreibprüfung."));
     compoundTokenizer = language.getStrictCompoundTokenizer();
@@ -1025,17 +1086,17 @@ public class GermanSpellerRule extends CompoundAwareHunspellRule {
     }
     return super.createWrongSplitMatch(sentence, ruleMatchesSoFar, pos, coveredWord, suggestion1, suggestion2, prevPos);
   }
+
   /*
    * @since 3.6
    */
   @Override
   public List<String> getSuggestions(String word) throws IOException {
-    if (word.endsWith("en")   // we're looking for base forms of verbs
-        && word.length() < 20 && word.matches("[a-zA-Zöäüß-]+.?")) {
+    if (word.length() < 18 && word.matches("[a-zA-Zöäüß-]+.?")) {
       for (String prefix : VerbPrefixes.get()) {
         if (word.startsWith(prefix)) {
           String lastPart = word.substring(prefix.length());
-          if (!isMisspelled(lastPart)) {
+          if (lastPart.length() > 3 && !isMisspelled(lastPart)) {
             // as these are only single words and both the first part and the last part are spelled correctly
             // (but the combination is not), it's okay to log the words from a privacy perspective:
             logger.info("UNKNOWN: " + word);
@@ -1058,36 +1119,16 @@ public class GermanSpellerRule extends CompoundAwareHunspellRule {
   }
 
   @Nullable
-  private static MorfologikMultiSpeller getSpeller(Language language, UserConfig userConfig,
-                                                   String languageVariantPlainTextDict) {
-    if (!language.getShortCode().equals(Locale.GERMAN.getLanguage())) {
-      throw new IllegalArgumentException("Language is not a variant of German: " + language);
-    }
+  protected static MorfologikMultiSpeller getSpeller(Language language, UserConfig userConfig, String languageVariantPlainTextDict) {
     try {
-      String morfoFile = "/de/hunspell/de_" + language.getCountries()[0] + JLanguageTool.DICTIONARY_FILENAME_EXTENSION;
+      String langCode = language.getShortCode();
+      String morfoFile = "/" + langCode + "/hunspell/" + langCode + "_" + language.getCountries()[0] + JLanguageTool.DICTIONARY_FILENAME_EXTENSION;
       if (JLanguageTool.getDataBroker().resourceExists(morfoFile)) {  // spell data will not exist in LibreOffice/OpenOffice context
-        List<String> paths = Arrays.asList(
-          "/de/hunspell/spelling.txt",
-          "/de/hunspell/spelling_custom.txt",
-          "spelling_global.txt"
-        );
-        List<InputStream> streams = new ArrayList<>();
-        for (String path : paths) {
-          // add separation between streams so that missing newlines at the end don't join the last & first line from two files
-          String separation = "# Start of file " + path.replaceAll("\n", "") + "\n";
-          ByteArrayInputStream separationStream = new ByteArrayInputStream(
-            Charset.defaultCharset().encode(separation).array());
-          streams.add(separationStream);
-          streams.add(JLanguageTool.getDataBroker().getFromResourceDirAsStream(path));
-          streams.add(new ByteArrayInputStream(System.lineSeparator().getBytes(StandardCharsets.UTF_8)));  // don't crash if input doesn't end with newline
-        }
+        List<String> paths = getSpellingFilePaths(langCode);
+        List<InputStream> streams = getStreams(paths);
         try (BufferedReader br = new BufferedReader(
           new InputStreamReader(new SequenceInputStream(Collections.enumeration(streams)), UTF_8))) {
-          BufferedReader variantReader = null;
-          if (languageVariantPlainTextDict != null && !languageVariantPlainTextDict.isEmpty()) {
-            InputStream variantStream = JLanguageTool.getDataBroker().getFromResourceDirAsStream(languageVariantPlainTextDict);
-            variantReader = new ExpandingReader(new BufferedReader(new InputStreamReader(variantStream, UTF_8)));
-          }
+          BufferedReader variantReader = getVariantReader(languageVariantPlainTextDict);
           return new MorfologikMultiSpeller(morfoFile, new ExpandingReader(br), paths,
             variantReader, languageVariantPlainTextDict, userConfig != null ? userConfig.getAcceptedWords(): Collections.emptyList(), MAX_EDIT_DISTANCE);
         }
@@ -1097,6 +1138,16 @@ public class GermanSpellerRule extends CompoundAwareHunspellRule {
     } catch (IOException e) {
       throw new RuntimeException("Could not set up morfologik spell checker", e);
     }
+  }
+
+  @Nullable
+  private static BufferedReader getVariantReader(String languageVariantPlainTextDict) {
+    BufferedReader variantReader = null;
+    if (languageVariantPlainTextDict != null && !languageVariantPlainTextDict.isEmpty()) {
+      InputStream variantStream = JLanguageTool.getDataBroker().getFromResourceDirAsStream(languageVariantPlainTextDict);
+      variantReader = new ExpandingReader(new BufferedReader(new InputStreamReader(variantStream, UTF_8)));
+    }
+    return variantReader;
   }
 
   @Override
@@ -1184,6 +1235,9 @@ public class GermanSpellerRule extends CompoundAwareHunspellRule {
 
   @Override
   public boolean isMisspelled(String word) {
+    if (word.startsWith("Spielzug") && !word.matches("Spielzugs?|Spielzugangs?|Spielzuganges|Spielzugbuchs?|Spielzugbüchern?|Spielzuges|Spielzugverluste?|Spielzugverlusten|Spielzugverlustes")) {
+      return true;
+    }
     if (word.startsWith("Standart") && !word.equals("Standarte") && !word.equals("Standarten") && !word.startsWith("Standartenträger") && !word.startsWith("Standartenführer")) {
       return true;
     }

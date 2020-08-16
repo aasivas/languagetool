@@ -42,11 +42,6 @@ import java.util.*;
  */
 public class GermanTagger extends BaseTagger {
 
-  private final ManualTagger removalTagger;
-  private final Map<String, PrefixInfixVerb> verbInfos = new HashMap<>();
-
-  private GermanCompoundTokenizer compoundTokenizer;
-
   private final static Synthesizer synthesizer = new GermanyGerman().getSynthesizer();
 
   private static final List<String> allAdjGruTags = new ArrayList<>();
@@ -82,6 +77,11 @@ public class GermanTagger extends BaseTagger {
     tagsForWeise.add("ADJ:NOM:SIN:NEU:GRU:DEF");
     tagsForWeise.add("ADJ:PRD:GRU");
   }
+
+  private final ManualTagger removalTagger;
+  private final Map<String, PrefixInfixVerb> verbInfos = new HashMap<>();
+
+  private GermanCompoundTokenizer compoundTokenizer;
 
   public GermanTagger() {
     super("/de/german.dict", Locale.GERMAN);
@@ -226,7 +226,7 @@ public class GermanTagger extends BaseTagger {
           String noPrefixForm = word.substring(verbInfo.prefix.length() + verbInfo.infix.length());   // infix can be "zu"
           List<TaggedWord> tags = tag(noPrefixForm);
           for (TaggedWord tag : tags) {
-            if (tag.getPosTag() != null && tag.getPosTag().startsWith("VER:")) {  // e.g. "schicke" is verb and adjective
+            if (tag.getPosTag() != null && (tag.getPosTag().startsWith("VER:") || tag.getPosTag().startsWith("PA2:"))) {  // e.g. "schicke" is verb and adjective
               readings.add(new AnalyzedToken(word, tag.getPosTag(), verbInfo.prefix + tag.getLemma()));
             }
           }
@@ -301,7 +301,7 @@ public class GermanTagger extends BaseTagger {
                 readings.add(getNoInfoToken(word));
               }
             }
-          } else {
+          } else if (!(idxPos+2 < sentenceTokens.size() && sentenceTokens.get(idxPos+1).equals(".") && sentenceTokens.get(idxPos+2).matches("com|net|org|de|at|ch|fr|uk|gov"))) {  // TODO: find better way to ignore domains
             // last part governs a word's POS:
             String lastPart = compoundParts.get(compoundParts.size() - 1);
             if (StringTools.startsWithUppercase(word)) {
@@ -314,7 +314,8 @@ public class GermanTagger extends BaseTagger {
               readings.addAll(getAnalyzedTokens(partTaggerTokens, word, compoundParts));
             }
           }
-        } else {
+        }
+        if (readings.size() == 0) {
           readings.add(getNoInfoToken(word));
         }
       }
@@ -449,6 +450,10 @@ public class GermanTagger extends BaseTagger {
   private List<AnalyzedToken> getAnalyzedTokens(List<TaggedWord> taggedWords, String word, List<String> compoundParts) {
     List<AnalyzedToken> result = new ArrayList<>();
     for (TaggedWord taggedWord : taggedWords) {
+      if (taggedWord.getPosTag() != null && taggedWord.getPosTag().startsWith("VER:IMP")) {
+        // ignore imperative, as otherwise e.g. "zehnfach" will be interpreted as a verb (zehn + fach)
+        continue;
+      }
       List<String> allButLastPart = compoundParts.subList(0, compoundParts.size() - 1);
       StringBuilder lemma = new StringBuilder();
       int i = 0;

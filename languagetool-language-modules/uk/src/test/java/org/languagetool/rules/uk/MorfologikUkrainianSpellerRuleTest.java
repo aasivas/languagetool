@@ -97,9 +97,8 @@ public class MorfologikUkrainianSpellerRuleTest {
     assertEquals(0, matches.length);
 
     // розмовний інфінітив
-    matches = rule.match(langTool.getAnalyzedSentence("писать"));
-
-    assertEquals(1, matches.length);
+//    matches = rule.match(langTool.getAnalyzedSentence("треба писать"));
+//    assertEquals(0, matches.length);
 
     // abbreviations
 
@@ -154,6 +153,13 @@ public class MorfologikUkrainianSpellerRuleTest {
 //    assertEquals(1, Arrays.asList(match).size());
 //    assertEquals(0, match[0].getFromPos());
 //    assertEquals(sent.length(), match[0].getToPos());
+  }
+
+  @Test
+  public void testSuggestionOrder() throws IOException {
+    RuleMatch[] match = rule.match(langTool.getAnalyzedSentence("захворіває"));
+    assertEquals(1, Arrays.asList(match).size());
+    assertEquals(Arrays.asList("захворів", "захворіла", "захворіє", "захворівши", "захворював"), match[0].getSuggestedReplacements());
   }
 
   @Test

@@ -204,7 +204,7 @@ public abstract class Language {
    * Can return non-remote rules (e.g. if configuration missing, or for A/B tests), will be executed normally
    */
   public List<Rule> getRelevantRemoteRules(ResourceBundle messageBundle, List<RemoteRuleConfig> configs,
-                                           GlobalConfig globalConfig, UserConfig userConfig, Language motherTongue, List<Language> altLanguages)
+                                           GlobalConfig globalConfig, UserConfig userConfig, Language motherTongue, List<Language> altLanguages, boolean inputLogging)
     throws IOException {
     return Collections.emptyList();
   }
@@ -217,7 +217,7 @@ public abstract class Language {
   @Experimental
   public Function<Rule, Rule> getRemoteEnhancedRules(
     ResourceBundle messageBundle, List<RemoteRuleConfig> configs, UserConfig userConfig,
-    Language motherTongue, List<Language> altLanguages) throws IOException {
+    Language motherTongue, List<Language> altLanguages, boolean inputLogging) throws IOException {
     return Function.identity();
   }
 
@@ -355,7 +355,6 @@ public abstract class Language {
     if (tagger == null) {
       tagger = createDefaultTagger();
     }
-
     return tagger;
   }
 
@@ -493,7 +492,6 @@ public abstract class Language {
     if (synthesizer == null) {
       synthesizer = createDefaultSynthesizer();
     }
-
     return synthesizer;
   }
 
@@ -711,8 +709,32 @@ public abstract class Language {
    * Negative integers have lower priority.
    * @since 3.6
    */
-  public int getPriorityForId(String id) {
+  protected int getPriorityForId(String id) {
+    if (id.equalsIgnoreCase("STYLE")) {  // category
+      return -50;  // don't let style issues hide more important errors
+    }
     return 0;
+  }
+  
+  /**
+   * Returns a priority for Rule (default: 0).
+   * Positive integers have higher priority.
+   * Negative integers have lower priority.
+   * @since 5.0
+   */
+  
+  public int getRulePriority(Rule rule) {
+    if (rule.getCategory().getId() == null) {
+      return 0;
+    }
+    int categoryPriority = this.getPriorityForId(rule.getCategory().getId().toString());
+    int rulePriority = this.getPriorityForId(rule.getId());
+    // if there is a priority defined for rule it takes precedence over category priority
+    if (rulePriority != 0) {
+      return rulePriority;
+    } else {
+      return categoryPriority;
+    }
   }
 
   /**
@@ -730,6 +752,21 @@ public abstract class Language {
    */
   public boolean hasNGramFalseFriendRule(Language motherTongue) {
     return false;
+  }
+
+  /** @since 5.1 */
+  public String getOpeningQuote() {
+    return "\"";
+  }
+
+  /** @since 5.1 */
+  public String getClosingQuote() {
+    return "\"";
+  }
+  
+  /** @since 5.1 */
+  public String toAdvancedTypography(String s) {
+    return s;
   }
 
   /**

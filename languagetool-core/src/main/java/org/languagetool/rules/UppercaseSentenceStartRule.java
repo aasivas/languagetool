@@ -45,6 +45,9 @@ public class UppercaseSentenceStartRule extends TextLevelRule {
           "iPhone",
           "iPhones",
           "iOS",
+          "iBook",
+          "iDEAL",
+          "iDeal",
           "iMovie",
           "iLife",
           "iWork",
@@ -53,6 +56,7 @@ public class UppercaseSentenceStartRule extends TextLevelRule {
           "eBay",
           "fMRI",
           "iPad",
+          "iPadOS",
           "iPads",
           "iPod",
           "iPods",
@@ -61,10 +65,13 @@ public class UppercaseSentenceStartRule extends TextLevelRule {
           "iRobots",
           "iTunes",
           "macOS",
+          "watchOS",
+          "tvOS",
           "mRNA",
           "iHeartRadio",
           "iMessage",
-          "iFood"
+          "iFood",
+          "x86"
   ));
 
   private final Language language;
@@ -175,8 +182,8 @@ public class UppercaseSentenceStartRule extends TextLevelRule {
           ruleMatches.add(ruleMatch);
         }
       }
-      pos += sentence.getText().length();
-      // Plain text lists like this are not properly split into sentences, we 
+      pos += sentence.getCorrectedTextLength();
+      // Plain text lists like this are not properly split into sentences, we
       // work around that here so the items don't create an error when starting lowercase:
       // 1. item one
       // 2. item two

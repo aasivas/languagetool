@@ -22,6 +22,8 @@ import com.hankcs.algorithm.AhoCorasickDoubleArrayTrie;
 import org.languagetool.AnalyzedSentence;
 import org.languagetool.AnalyzedTokenReadings;
 import org.languagetool.Language;
+import org.languagetool.LinguServices;
+import org.languagetool.UserConfig;
 import org.languagetool.languagemodel.LanguageModel;
 import org.languagetool.rules.*;
 import org.languagetool.rules.ngrams.Probability;
@@ -34,7 +36,9 @@ import java.io.IOException;
 import java.util.*;
 
 import static org.languagetool.rules.patterns.PatternRuleBuilderHelper.token;
+import static org.languagetool.rules.patterns.PatternRuleBuilderHelper.pos;
 import static org.languagetool.rules.patterns.PatternRuleBuilderHelper.tokenRegex;
+import static org.languagetool.rules.patterns.PatternRuleBuilderHelper.csRegex;
 
 /**
  * Finds some(!) words written uppercase that should be spelled lowercase.
@@ -44,6 +48,7 @@ public class UpperCaseNgramRule extends Rule {
 
   public static final int THRESHOLD = 50;
   private static MorfologikAmericanSpellerRule spellerRule;
+  private static LinguServices linguServices = null;
   private static Set<String> exceptions = new HashSet<>(Arrays.asList(
     "Bin", "Spot",  // names
     "Go",           // common usage, as in "Go/No Go decision"
@@ -52,9 +57,244 @@ public class UpperCaseNgramRule extends Rule {
   private static final AhoCorasickDoubleArrayTrie<String> exceptionTrie = new AhoCorasickDoubleArrayTrie<>();
   private static final List<List<PatternToken>> ANTI_PATTERNS = Arrays.asList(
     Arrays.asList(
-      tokenRegex("[A-Z].+"),  // e.g. Kuiper’s Belt
+      token("Hugs"), token("and"), token("Kisses")
+    ),
+    Arrays.asList( // Please go to File and select Options. 
+      token("go"),
+      token("to"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      tokenRegex("[A-Z].+"),
+      token(","),
+      tokenRegex("[Aa]nd|[Oo]r|&"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList( // "The goal is to Develop, Discuss and Learn.""
+      tokenRegex("[A-Z].+"),
+      token(","),
+      tokenRegex("[A-Z].+"),
+      tokenRegex("[Aa]nd|[Oo]r|&|,"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList( // "The goal is to Develop, Discuss and Learn.""
+      tokenRegex("[A-Z].+"),
+      token(")"),
+      token(","),
+      tokenRegex("[A-Z].+"),
+      tokenRegex("[Aa]nd|[Oo]r|&|,"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      csRegex("[A-Z].+"),
+      token(">"),
+      csRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      pos("SENT_START"), // Two-word phrases with "?" or "!": "What Happened?", "Catch Up!" (can be headlines)
+      tokenRegex("[A-Z].+"),
+      tokenRegex("[A-Z].+"),
+      tokenRegex("[\\!\\?]")
+    ),
+    Arrays.asList(
+      pos("SENT_START"), // Step1 - Watch the full episode.
+      tokenRegex(".*\\w.*"),
+      tokenRegex("-|–"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      pos("SENT_START"), // Step 1 - Watch the full episode.
+      tokenRegex(".*\\w.*"),
+      tokenRegex("[0-9]+"),
+      tokenRegex("-|–"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      pos("SENT_START"), // Markdowm headline # Show some
+      token("#"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      pos("SENT_START"), // Markdowm headline ## Show some
+      token("#"),
+      token("#"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      pos("SENT_START"), // Markdowm headline ## Show some
+      token("#"),
+      token("#"),
+      token("#"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList( // Scene 4, Lines 93-96
+      tokenRegex("[A-Z].+"),
+      tokenRegex("\\d+"),
+      tokenRegex("-|–|,"),
+      tokenRegex("[A-Z].+"),
+      tokenRegex("\\d+")
+    ),
+    Arrays.asList( // 1.- Sign up for ...
+      tokenRegex("\\d+"),
+      token("."),
+      tokenRegex("-|–"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList( // French Quote + Uppercase word
+      tokenRegex("«"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList( // H1 What's wrong?
+      tokenRegex("H[1-6]"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      pos("SENT_START"), // ii) Enabling you to ...
+      tokenRegex("[a-z]{1,2}"),
+      token(")"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      pos("SENT_START"), // bullet point
+      token("•"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList( // Dash + Uppercase word
+      tokenRegex("-|–"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      tokenRegex("Step|Grade|Phase|Reason"), // I finished Step 6
+      tokenRegex("\\d+")
+    ),
+    Arrays.asList(
+      tokenRegex("the|our|their"), // Let's talk to the Onboarding team.
+      tokenRegex("[A-Z].+"),
+      tokenRegex("team|department")
+    ),
+    Arrays.asList(
+      pos("SENT_START"), // 12.3 Game.
+      tokenRegex("\\d+"),
+      tokenRegex("\\.|/"),
+      tokenRegex("\\d+"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      pos("SENT_START"), // Lesson #1 - Learn the alphabet.
+      tokenRegex(".*\\w.*"),
+      token("#"),
+      tokenRegex("[0-9]+"),
+      tokenRegex("-|–"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      token("BBC"),
+      token("Culture")
+    ),
+    Arrays.asList( // name of TV series
+      token("Dublin"),
+      token("Murders")
+    ),
+    Arrays.asList(
+      token("Amazon"),
+      token("Live")
+    ),
+    Arrays.asList( // Company name
+      token("Volvo"),
+      token("Buses")
+    ),
+    Arrays.asList(
+      csRegex("[A-Z].+"),
+      token("/"),
+      csRegex("[A-Z].+")
+    ),
+    Arrays.asList( // "Order #76540"
+      csRegex("[A-Z].+"),
+      token("#"),
+      tokenRegex("\\d+")
+    ),
+    Arrays.asList( // "He plays games at Games.co.uk."
+      csRegex("[A-Z].+"),
+      token("."),
+      tokenRegex("com?|de|us|gov|net|info|org|es|mx|ca|uk|at|ch|it|pl|ru|nl|ie|be|fr")
+    ),
+    Arrays.asList(
+      tokenRegex("[A-Z].+"),  // He's Ben (Been)
+      token("("),
+      tokenRegex("[A-Z].+"),
+      token(")")
+    ),
+    Arrays.asList(
+      token("["),
+      tokenRegex("[A-Z].+"),
+      token("]")
+    ),
+    Arrays.asList(
+      token("Pay"),
+      token("per"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      tokenRegex("Hi|Hello|Heya?"),
+      token(","),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList( // "C stands for Curse."
+      tokenRegex("[A-Z]"),
+      tokenRegex("is|stands"),
+      token("for"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      pos("SENT_START"), // The Story: (short headlines with colon)
+      tokenRegex("[A-Z].+"),
+      tokenRegex("[A-Z].+"),
+      token(":")
+    ),
+    Arrays.asList(
+      pos("SENT_START"), // Stop & Jot: (short headlines with colon)
+      tokenRegex("[A-Z].+"),
+      token("&"),
+      tokenRegex("[A-Z].+"),
+      token(":")
+    ),
+    Arrays.asList(
+      pos("SENT_START"), // Easy to Use: (short headlines with colon)
+      tokenRegex("[A-Z].+"),
+      tokenRegex("[a-z].+"),
+      tokenRegex("[A-Z].+"),
+      token(":")
+    ),
+    Arrays.asList(
+      tokenRegex("[A-Z].+"),  // e.g. "Top 10% Lunch Deals"
+      tokenRegex("\\d+%?"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      tokenRegex("[0-9]+"),  // e.g. "6) Have a beer"
+      tokenRegex("[)\\]]"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      tokenRegex("[a-z]"),  // e.g. "a) Have a beer"
+      tokenRegex("[)\\]]"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList(
+      tokenRegex("[\\(\\]]"),  // e.g. "(b) Have a beer"
+      tokenRegex("[a-z0-9]"),
+      tokenRegex("[)\\]]")
+    ),
+    Arrays.asList(
+      tokenRegex("[A-Z].+"),  // e.g. "Freelance 2.0"
+      tokenRegex("[0-9]+"),
+      tokenRegex("."),
+      tokenRegex("[0-9]+")
+    ),
+    Arrays.asList(
+      tokenRegex("[A-Z].*"),  // e.g. "You Don't Know" or "Kuiper’s Belt"
       tokenRegex("['’`´‘]"),
-      token("s"),
+      tokenRegex("t|d|ve|s|re|m|ll"),
       tokenRegex("[A-Z].+")
     ),
     Arrays.asList(
@@ -77,13 +317,75 @@ public class UpperCaseNgramRule extends Rule {
     Arrays.asList(
       token("Time"),
       token("magazine")
+    ),
+    Arrays.asList( // My name is Gentle.
+      token("name"),
+      token("is"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList( // They called it Greet.
+      tokenRegex("calls?|called|calling|name[ds]?|naming"),
+      token("it|him|her|them|me|us|that|this"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList( // It is called Ranked mode
+      csRegex("is|was|been|were|are"),
+      csRegex("calls?|called|calling|name[ds]?|naming"),
+      csRegex("[A-Z].+")
+    ),
+    Arrays.asList( // What is Foreshadowing?
+      tokenRegex("Who|What"),
+      tokenRegex("is|are|was|were"),
+      tokenRegex("[A-Z].+"),
+      token("?")
+    ),
+    Arrays.asList( // His name is Carp.
+      token("name"),
+      tokenRegex("is|was"),
+      tokenRegex("[A-Z].+")
+    ),
+    Arrays.asList( // FDM Group
+      tokenRegex("[A-Z].*"),
+      token("Group")
+    ),
+    Arrays.asList( // Enter key
+      tokenRegex("Enter|Escape|Shift|Control|Meta|Backspace"),
+      token("key")
+    ),
+    Arrays.asList( // Victor or Rabbit as everyone calls him.
+      pos("NNP"),
+      tokenRegex("or|and|&"),
+      tokenRegex("[A-Z].*")
+    ),
+    Arrays.asList( // Hashtags
+      token("#"),
+      tokenRegex("[A-Z].*")
+    ),
+    Arrays.asList(
+      tokenRegex("Teams|Maps|Canvas|Remind|Switch|Gems?|Glamour|Divvy|Solo|Splash|Phrase|Beam") // Microsoft Teams, Google Maps, Remind App, Nintendo Switch (not tagged as NNP), Gems (Ruby Gems)
+    ),
+    Arrays.asList(
+      pos("SENT_START"), // Music and Concepts.
+      tokenRegex("[A-Z].*"),
+      tokenRegex("or|and|&"),
+      tokenRegex("[A-Z].*"),
+      pos("SENT_END")
+    ),
+    Arrays.asList( // Please click Send
+      csRegex("click(ed|s)?|type(d|s)|hit"),
+      tokenRegex("[A-Z].*")
+    ),
+    Arrays.asList( // Please click on Send
+      csRegex("click(ed|s)?"),
+      tokenRegex("on|at"),
+      tokenRegex("[A-Z].*")
     )
   );
 
   private final Language lang;
   private final LanguageModel lm;
 
-  public UpperCaseNgramRule(ResourceBundle messages, LanguageModel lm, Language lang) {
+  public UpperCaseNgramRule(ResourceBundle messages, LanguageModel lm, Language lang, UserConfig userConfig) {
     super(messages);
     super.setCategory(Categories.CASING.getCategory(messages));
     this.lm = lm;
@@ -91,6 +393,10 @@ public class UpperCaseNgramRule extends Rule {
     setLocQualityIssueType(ITSIssueType.Misspelling);
     addExamplePair(Example.wrong("This <marker>Prototype</marker> was developed by Miller et al."),
                    Example.fixed("This <marker>prototype</marker> was developed by Miller et al."));
+    if (userConfig != null && linguServices == null) {
+      linguServices = userConfig.getLinguServices();
+      initTrie();
+    }
     if (spellerRule == null) {
       initTrie();
       try {
@@ -160,7 +466,7 @@ public class UpperCaseNgramRule extends Rule {
           && !nextIsOneOfThenUppercase(tokens, i, Arrays.asList("of"))
           && !tokenStr.matches("I")
           && !exceptions.contains(tokenStr)
-          && !spellerRule.isMisspelled(StringTools.lowercaseFirstChar(tokenStr))    // e.g. "German" is correct, "german" isn't
+          && !isMisspelled(StringTools.lowercaseFirstChar(tokenStr))    // e.g. "German" is correct, "german" isn't
           && !trieMatches(sentence.getText(), token)
           && !maybeTitle(tokens, i)
       ) {
@@ -184,6 +490,10 @@ public class UpperCaseNgramRule extends Rule {
       }
     }
     return toRuleMatchArray(matches);
+  }
+  
+  boolean isMisspelled(String word) throws IOException {
+    return (linguServices == null ? spellerRule.isMisspelled(word) : !linguServices.isCorrectSpell(word, lang));
   }
 
   // a very rough guess whether the word at the given position might be part of a title
@@ -213,7 +523,7 @@ public class UpperCaseNgramRule extends Rule {
 
   private boolean isShortWord(AnalyzedTokenReadings token) {
     // ignore words typically spelled lowercase even in titles
-    return token.getToken().trim().isEmpty() || token.getToken().matches("and|or|the|of|on|with|to|it|in|for|as|at|his|her|its|into");
+    return token.getToken().trim().isEmpty() || token.getToken().matches("and|or|the|of|on|with|to|it|in|for|as|at|his|her|its|into|&|/");
   }
 
   private boolean trieMatches(String text, AnalyzedTokenReadings token) {

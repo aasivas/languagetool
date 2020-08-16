@@ -41,7 +41,7 @@ public class RuleMatchDiffFinder {
         if (!oldMatch.getSuggestions().equals(match.getSuggestions()) ||
             !oldMatch.getMessage().equals(match.getMessage()) ||
             oldMatch.getStatus() != match.getStatus() ||
-            !Objects.equals(oldMatch.getSubId(), match.getSubId()) ||
+            //!Objects.equals(oldMatch.getSubId(), match.getSubId()) ||   -- sub id change = other sub-rule added or removed, this is usually not relevant
             !oldMatch.getCoveredText().equals(match.getCoveredText())) {
           result.add(RuleMatchDiff.modified(oldMatch, match));
         }
@@ -194,7 +194,14 @@ public class RuleMatchDiffFinder {
     String title = "Comparing " + file1.getName() + " to "  + file2.getName();
     System.out.println(title);
     List<RuleMatchDiff> diffs = getDiffs(l1, l2);
-    diffs.sort(Comparator.comparing(this::getFullId));
+    diffs.sort((k, j) -> {
+        int idDiff = getFullId(k).compareTo(getFullId(j));
+        if (idDiff == 0) {
+          return k.getStatus().compareTo(j.getStatus());
+        }
+        return idDiff;
+      }
+    );
     System.out.println("Total diffs found: " + diffs.size());
     Map<String, List<RuleMatchDiff>> keyToDiffs = groupDiffs(diffs);
     List<OutputFile> outputFiles = new ArrayList<>();
